@@ -174,11 +174,13 @@ classdef dfplot
             
             if figureplot==1
                 hold on
-                plot(Vapp, J.tot(:,end)+Vapp/Rshunt)
+                Jtot = J.tot(:,end) + Vapp/Rshunt;
+                plot(Vapp, Jtot*1000);
                 
-                ylim([-30e-3, 10e-3]);
+                ylim([-30, 10]);
+                %ylim([-30e-3, 10e-3]);
                 xlabel('Applied voltage [V]')
-                ylabel('Current density [Acm-2]');
+                ylabel('Current density [mA/cm^2]');
                 hold off
             end
             Jsc=-interp1(Vapp,J.tot(:,end),0)*1e3;%in mAcm-2
