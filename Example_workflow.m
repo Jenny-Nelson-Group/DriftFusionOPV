@@ -4,16 +4,12 @@
 % emission spectra based on the properties of the states 
 
 %% SET PARAMETERS and make Device
-variable = logspace(-5,5,50);
-N = length(variable);
-Jsc = zeros(1,N);
 
-%for index = 1:1
 % Set and adjust the Recombination Parameters
-Prec                        = paramsRec;    % initiliase the recombination parameters (default values)
-offset                      = 0.2;
-Prec.params.tickness        = 100 * 1e-9;    % in m
-Prec.params.Ex.DG0          = 1.65;
+Prec                        = paramsRec;                    % initiliase the recombination parameters (default values)
+offset                      = 0.2;                  % eV    % energy difference between the excited state and the CT state
+Prec.params.tickness        = 100 * 1e-9;           % m     % thickness of the active layer
+Prec.params.Ex.DG0          = 1.63;                 
 Prec.params.CT.DG0          = Prec.params.Ex.DG0 - offset;
 Prec.params.Ex.f            = 5;
 Prec.params.CT.f            = 5e-2;
@@ -21,7 +17,7 @@ Prec.params.Ex.sigma        = 0.02;
 Prec.params.CT.sigma        = 0.04;
 Prec.params.Ex.numbrestate  = 1;
 Prec.params.CT.numbrestate  = 1;
-Prec.params.Ex.Li           = 0.13;
+Prec.params.Ex.Li           = 0.15;
 Prec.params.CT.Li           = 0.15;
 Prec.params.Ex.L0           = 0.1;
 Prec.params.CT.L0           = 0.18;
@@ -35,19 +31,21 @@ krecCT  = Prec.params.CT.results.knr;
 krecex  = Prec.params.Ex.results.knr;
 Voc     = Prec.results.Vocrad - Prec.results.Dvnr;
 
-Jsc(index) = Prec.results.Jscrad;
-%end
-
 %% Generate a device with the defined parameters
-% Parameters are from Prec, pnParamsHCT.m, p3hTPCBM.xlsx, PINDevice.xlsx
+% Parameters are from Prec which is defined above and from the PINDevice file, which is loaded below
+
 activelayer = 2;        % Active Layer Index                % integer
-NC          = 2e21;     % Number of Charge Carriers         % cm^-3
+NC          = 2e19;     % Number of Charge Carriers         % cm^-3
 Kfor        = 1e-10;    % Rate Constant CS to CT            % cm^3 / s
 kdis        = 1e11;     % Rate Constant CT dissociation     % cm^3 / s
 kdisex      = 1e12;     % Rate Constatn Ex dissociation     % cm^3 / s
 mobility    = 3e-4;     % Charge Carrier Mobility           % cm^2 / V / s
 
-DP = deviceparams('PINDevice.xlsx');
+deviceParameterFile = uigetfile('parameters\DeviceParameters_Default.xlsx');
+if isequal(deviceParameterFile,0)
+    deviceParameterFile = 'DeviceParameters_Default.xlsx';
+end
+DP = deviceparams(['parameters\',deviceParameterFile]);
 
 DP.light_properties.OM      = 0; %to consider the transfer matrix generation profile
 DP.Time_properties.tpoints  = 100;
