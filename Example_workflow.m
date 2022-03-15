@@ -7,7 +7,7 @@
 
 % Set and adjust the Recombination Parameters
 Prec                        = paramsRec;                    % initiliase the recombination parameters (default values)
-offset                      = 0.2;                  % eV    % energy difference between the excited state and the CT state
+offset                      = 0.3;                  % eV    % energy difference between the excited state and the CT state
 Prec.params.tickness        = 100 * 1e-9;           % m     % thickness of the active layer
 Prec.params.Ex.DG0          = 1.63;                 
 Prec.params.CT.DG0          = Prec.params.Ex.DG0 - offset;
