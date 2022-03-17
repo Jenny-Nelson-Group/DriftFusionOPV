@@ -1,2 +1,2 @@
 
-addpath(genpath('../DriftFusion Github'));
+addpath(genpath(pwd));
