@@ -429,8 +429,8 @@ classdef deviceparams
                 DP = Xgrid(DP);
                 DP=update_time(DP);
                 DP=Timemesh(DP);
-                DP.results.J0=CT0*tickness*q*1e3*(Prec.params.CT.results.knr+Prec.params.Ex.results.knr*exp(-offset/kbT)/Prec.params.RCTE);
-                DP.results.DVnr=-kbT*log(Prec.results.J0rad/DP.results.J0);
+                DP.results.J0 = CT0*tickness*q*1e3* (Prec.params.CT.results.knr + Prec.params.Ex.results.knr * exp(-offset/kbT)/Prec.params.RCTE);
+                DP.results.DVnr = -kbT*log(Prec.results.J0rad/DP.results.J0);
                 DP.results.Voc=Prec.results.Vocrad-DP.results.DVnr;
                 DP.results.Vocrad=Prec.results.Vocrad;
                 DP.light_properties.Genstrength  =Prec.results.Jscrad/tickness/q/1e3;%for uniform generation in cm-3 one sun equivalent
@@ -498,6 +498,8 @@ classdef deviceparams
             Y=interp1(t*1e12,(y(:,1)+y(:,3)-yeq(end,1)-yeq(end,3))./max((y(:,1)+y(:,3)-yeq(end,1)-yeq(end,3))),time);
             
             xlim([1 max(tspan*1e12)])
+            xlabel("Time [units?]")
+            ylabel("TAS (?)")
             legend
 
         end
@@ -509,10 +511,10 @@ classdef deviceparams
             krE=Prec.params.CT.results.krE*CTsum+Prec.params.Ex.results.krE*Exsum;
             figure(fighandle)
             subplot(2,2,3)
-            semilogy(Prec.const.Edistribution,krE/max(krE),'DisplayName',"Total")
+            semilogy(Prec.const.Edistribution,krE/max(krE),'DisplayName',"Total",'Color',[1,0,0],'LineWidth',2)
             hold on
-            semilogy(Prec.const.Edistribution,Prec.params.CT.results.krE*CTsum/max(krE),'--','DisplayName',"CT contribution")
-            semilogy(Prec.const.Edistribution,Prec.params.Ex.results.krE*Exsum/max(krE),'DisplayName',"Ex contribution")
+            semilogy(Prec.const.Edistribution,Prec.params.CT.results.krE*CTsum/max(krE),'--','DisplayName',"CT contribution",'Color',[1, 0.66, 0.59])
+            semilogy(Prec.const.Edistribution,Prec.params.Ex.results.krE*Exsum/max(krE),'DisplayName',"Ex contribution",'Color',[1, 0.66, 0.59])
             X=(Prec.const.Edistribution)';
             Y=(krE/max(krE))';
             Z=(Prec.params.CT.results.krE*CTsum/max(krE))';
@@ -671,10 +673,10 @@ classdef deviceparams
             subplot(2,2,2)
             krE=Prec.params.CT.results.krE*CTsum+Prec.params.Ex.results.krE*Exsum;
             
-            semilogy(Prec.const.Edistribution,krE/max(krE),'DisplayName',"Total contribution")
+            semilogy(Prec.const.Edistribution,krE/max(krE),'DisplayName',"Total contribution",'Color',[1,0,0],'LineWidth',2)
             hold on
-            semilogy(Prec.const.Edistribution,Prec.params.CT.results.krE*CTsum/max(krE),'--','DisplayName',"CT contribution")
-            semilogy(Prec.const.Edistribution,Prec.params.Ex.results.krE*Exsum/max(krE),'DisplayName',"Ex contribution")
+            semilogy(Prec.const.Edistribution,Prec.params.CT.results.krE*CTsum/max(krE),'--','DisplayName',"CT contribution",'Color',[1, 0.66, 0.59])
+            semilogy(Prec.const.Edistribution,Prec.params.Ex.results.krE*Exsum/max(krE),'DisplayName',"Ex contribution",'Color',[1, 0.66, 0.59])
             X=(Prec.const.Edistribution)';
             Y=(krE/max(krE))';
             Z=(Prec.params.CT.results.krE*CTsum/max(krE))';

@@ -263,10 +263,10 @@ classdef paramsRec
         function Prec=absorptionSIm(Prec)
             
             %%%%%%%%%%%%%%%%%%%absorption spectrum%%%%%%%%%%%%%%%%%
-            Prec.params.CT=paramsRec.absorptionstate(Prec.params.CT,Prec.const);
-            Prec.params.Ex=paramsRec.absorptionstate(Prec.params.Ex,Prec.const);
-            Einterp=Prec.const.Edistribution;
-            bbinterp=interp1(Prec.const.bb(:,1),Prec.const.bb(:,2),Einterp);
+            Prec.params.CT = paramsRec.absorptionstate(Prec.params.CT, Prec.const);
+            Prec.params.Ex = paramsRec.absorptionstate(Prec.params.Ex, Prec.const);
+            Einterp = Prec.const.Edistribution;
+            bbinterp = interp1(Prec.const.bb(:,1),Prec.const.bb(:,2),Einterp);
                         
 
             wavei=0;
@@ -292,7 +292,7 @@ classdef paramsRec
             %%%%%%%%%%%%%absorption
             int=1;
             for E=Einterp
-                AbsLJ(int)=1-exp(-2*Prec.params.tickness*alphaLJ(int));
+                AbsLJ(int) = 1-exp(-2*Prec.params.tickness*alphaLJ(int));
                 int=int+1;
             end
             %%%%%%%%%%%%JSC rad%%%%%%%%%%%%%%%%%%%%%%
@@ -312,10 +312,10 @@ classdef paramsRec
             
         end
         function Prec=calcall(Prec)
-            Prec=paramsRec.update(Prec);
-            Prec=paramsRec.calcFCWD(Prec);
-            Prec=paramsRec.absorptionSIm(Prec);
-            Prec=paramsRec.Calcrates(Prec);
+            Prec = paramsRec.update(Prec);
+            Prec = paramsRec.calcFCWD(Prec);
+            Prec = paramsRec.absorptionSIm(Prec);
+            Prec = paramsRec.Calcrates(Prec);
 
         end
     end
