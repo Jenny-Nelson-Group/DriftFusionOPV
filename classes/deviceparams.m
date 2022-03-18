@@ -15,14 +15,19 @@ classdef deviceparams
         
     end
     methods
-
-        function  DP = deviceparams(Excelfilename)
-            
-     
+        function  DP = deviceparams(Excelfilename) 
+                % Deviceparams creates an object containg all the parameters
+                % of the OPV device.
+                % DP = deviceparams(Excelfilename)
+                % The excel files determines the parameters in DP.layers.
+                % All other parameters are determined within this constructor
+                % function. 
+                % INPUT:  Path to an exelfile
+                % OUTPUT: Object of the class deviceparams, containing
+                % the parameters specified inside the constructor and in
+                % the excel spreadsheat.
                 
-                
-                %Physical constants
-                
+                % Physical constants
                 physical_const.kB = 8.6173324e-5;    % Boltzmann constant [eV K^-1]
                 physical_const.T = 300;              % Temperature [K]
                 physical_const.epp0 = 552434;        % e^2 eV^-1 cm^-1 -Checked (02-11-15)
@@ -41,7 +46,6 @@ classdef deviceparams
                 Time_properties.tmax = 5e-5;        % Time
                 Time_properties.t0 = Time_properties.tmax/1000;
                 Time_properties.tpoints = 1000;
-                
                 
                 % back ground light properties
                 light_properties.Int =3;             % Bias Light intensity
@@ -142,6 +146,10 @@ classdef deviceparams
             DP.Xgrid_properties=x;
         end
         function DP=readlayers(DP,filename)
+            % Readlayers takes a deviceparams object and the filename of an
+            % excel sheet as input. It saves all the layer properties to
+            % the deviceparams and gives the updated object as output. 
+
             delimiterIn = ',';
             headerlinesIn = 0;
             data = importdata(filename,delimiterIn,headerlinesIn);
@@ -482,7 +490,7 @@ classdef deviceparams
             subplot(2,2,4)
 %             semilogx(t*1e12,(y-yeq(end,:))./max(y-yeq(end,:)),'-o')
            
-            semilogx(t*1e12,(y(:,1)+y(:,3)-yeq(end,1)-yeq(end,3))./max((y(:,1)+y(:,3)-yeq(end,1)-yeq(end,3))),'-o')
+            semilogx(t*1e12,(y(:,1)+y(:,3)-yeq(end,1)-yeq(end,3))./max((y(:,1)+y(:,3)-yeq(end,1)-yeq(end,3))),'-o',"DisplayName","GSB model");
              hold on
             time=logspace(-2,4,100);
             X=time;
@@ -490,7 +498,7 @@ classdef deviceparams
             Y=interp1(t*1e12,(y(:,1)+y(:,3)-yeq(end,1)-yeq(end,3))./max((y(:,1)+y(:,3)-yeq(end,1)-yeq(end,3))),time);
             
             xlim([1 max(tspan*1e12)])
-            legend("Exp","GSB model")
+            legend
 
         end
         function [X,Y,Z]=simulate_EL(DP,Prec,fighandle)
@@ -501,19 +509,19 @@ classdef deviceparams
             krE=Prec.params.CT.results.krE*CTsum+Prec.params.Ex.results.krE*Exsum;
             figure(fighandle)
             subplot(2,2,3)
-            semilogy(Prec.const.Edistribution,krE/max(krE))
+            semilogy(Prec.const.Edistribution,krE/max(krE),'DisplayName',"Total")
             hold on
-            semilogy(Prec.const.Edistribution,Prec.params.CT.results.krE*CTsum/max(krE))
-            semilogy(Prec.const.Edistribution,Prec.params.Ex.results.krE*Exsum/max(krE))
+            semilogy(Prec.const.Edistribution,Prec.params.CT.results.krE*CTsum/max(krE),'--','DisplayName',"CT contribution")
+            semilogy(Prec.const.Edistribution,Prec.params.Ex.results.krE*Exsum/max(krE),'DisplayName',"Ex contribution")
             X=(Prec.const.Edistribution)';
             Y=(krE/max(krE))';
             Z=(Prec.params.CT.results.krE*CTsum/max(krE))';
             
             xlabel('Energy [eV]')
             ylabel('El Emission  [a.u]')
-            ylim([1*1e-2, 1])
+            ylim([1*1e-4, 1])
             xlim([1,2])
-            legend("Exp","ToT","From CT","FromEx")
+            legend
             
         end
         function [X,Y,Z]=simulate_EL_notnorm(DP,Prec,label)
@@ -522,7 +530,7 @@ classdef deviceparams
             Exsum=y(end,4);
             
             krE=Prec.params.CT.results.krE*CTsum+Prec.params.Ex.results.krE*Exsum;
-            semilogy(Prec.const.Edistribution,krE)
+            semilogy(Prec.const.Edistribution,krE,"DisplayName",label);
             hold on
 
             X=(Prec.const.Edistribution)';
@@ -531,14 +539,7 @@ classdef deviceparams
             
             xlabel('Energy [eV]')
             ylabel('El Emission  [a.u]')
-                            ylim([max(krE)*1e-3, max(krE)])
-
-%             ylim([1*1e-2, 1])
-%             xlim([1,2])
-            lg=legend;
-            lg.String{end}=label;
-%             legend("Exp","ToT","From CT","FromEx")
-            
+            ylim([max(krE)*1e-3, max(krE)])            
         end
         function simulate_EL_explore_norm(DP,Prec,fighandle,legendname)
             [t,y]=solveKineticmodel(DP,0,1e20);
@@ -548,7 +549,7 @@ classdef deviceparams
             krE=Prec.params.CT.results.krE*CTsum+Prec.params.Ex.results.krE*Exsum;
             figure(fighandle)
             subplot(1,2,2)
-            semilogy(Prec.const.Edistribution,krE/max(krE))
+            semilogy(Prec.const.Edistribution,krE/max(krE),"DisplayName",legendname)
             hold on
 %             semilogy(Prec.const.Edistribution,Prec.params.CT.results.krE*CTsum/max(krE))
 %             semilogy(Prec.const.Edistribution,Prec.params.Ex.results.krE*Exsum/max(krE))
@@ -557,8 +558,6 @@ classdef deviceparams
             ylabel('El Emission  [a.u]')
             ylim([1*1e-2, 1])
             xlim([1,2])
-            lg=legend;
-            lg.String{end}=legendname;
             
         end
         function simulate_EL_explore(DP,Prec,fighandle,legendname)
@@ -569,7 +568,7 @@ classdef deviceparams
             krE=Prec.params.CT.results.krE*CTsum+Prec.params.Ex.results.krE*Exsum;
             figure(fighandle)
             subplot(2,2,3)
-            semilogy(Prec.const.Edistribution,krE)
+            semilogy(Prec.const.Edistribution,krE,"DisplayName",legendname)
             hold on
 %             semilogy(Prec.const.Edistribution,Prec.params.CT.results.krE*CTsum/max(krE))
 %             semilogy(Prec.const.Edistribution,Prec.params.Ex.results.krE*Exsum/max(krE))
@@ -578,8 +577,6 @@ classdef deviceparams
             ylabel('El Emission  [a.u]')
 %             ylim([1*1e-2, 1])
             xlim([1,2])
-            lg=legend;
-            lg.String{end}=legendname;
             
         end
         function simulate_PL_explore(DP,Prec,fighandle,legendname)
@@ -590,7 +587,7 @@ classdef deviceparams
             krE=Prec.params.CT.results.krE*CTsum+Prec.params.Ex.results.krE*Exsum;
             figure(fighandle)
             subplot(2,2,2)
-            semilogy(Prec.const.Edistribution,krE)
+            semilogy(Prec.const.Edistribution,krE,"DisplayName",legendname)
             hold on
 %             semilogy(Prec.const.Edistribution,Prec.params.CT.results.krE*CTsum/max(krE))
 %             semilogy(Prec.const.Edistribution,Prec.params.Ex.results.krE*Exsum/max(krE))
@@ -598,10 +595,7 @@ classdef deviceparams
             xlabel('Energy [eV]')
             ylabel('Pl Emission  [a.u]')
 %             ylim([1*1e-2, 1])
-            xlim([1,2])
-            lg=legend;
-            lg.String{end}=legendname;
-            
+            xlim([1,2])            
         end
         function simulate_PL_explore_norm(DP,Prec,fighandle,legendname)
             [t,y]=solveKineticmodel(DP,1e25,0);
@@ -611,7 +605,7 @@ classdef deviceparams
             krE=Prec.params.CT.results.krE*CTsum+Prec.params.Ex.results.krE*Exsum;
             figure(fighandle)
             subplot(1,2,1)
-            semilogy(Prec.const.Edistribution,krE/max(krE))
+            semilogy(Prec.const.Edistribution,krE/max(krE),"DisplayName",legendname)
             hold on
 %             semilogy(Prec.const.Edistribution,Prec.params.CT.results.krE*CTsum/max(krE))
 %             semilogy(Prec.const.Edistribution,Prec.params.Ex.results.krE*Exsum/max(krE))
@@ -619,10 +613,7 @@ classdef deviceparams
             xlabel('Energy [eV]')
             ylabel('Pl Emission  [a.u]')
             ylim([1*1e-2, 1])
-            xlim([1,2])
-            lg=legend;
-            lg.String{end}=legendname;
-            
+            xlim([1,2])            
         end
         function simulate_TCSPC(DP,Prec,G,Gpulse,fighandle,varargin)
             %if varagin>6 hold the figure
@@ -680,18 +671,18 @@ classdef deviceparams
             subplot(2,2,2)
             krE=Prec.params.CT.results.krE*CTsum+Prec.params.Ex.results.krE*Exsum;
             
-            semilogy(Prec.const.Edistribution,krE/max(krE))
+            semilogy(Prec.const.Edistribution,krE/max(krE),'DisplayName',"Total contribution")
             hold on
-            semilogy(Prec.const.Edistribution,Prec.params.CT.results.krE*CTsum/max(krE))
-            semilogy(Prec.const.Edistribution,Prec.params.Ex.results.krE*Exsum/max(krE))
+            semilogy(Prec.const.Edistribution,Prec.params.CT.results.krE*CTsum/max(krE),'--','DisplayName',"CT contribution")
+            semilogy(Prec.const.Edistribution,Prec.params.Ex.results.krE*Exsum/max(krE),'DisplayName',"Ex contribution")
             X=(Prec.const.Edistribution)';
             Y=(krE/max(krE))';
             Z=(Prec.params.CT.results.krE*CTsum/max(krE))';
             xlabel('Energy [eV]')
             ylabel('PL Emission  [a.u]')
-            ylim([1*1e-2, 1])
+            ylim([1*1e-4, 1])
             xlim([1,2])
-            legend("Exp","ToT","From CT","FromEx")
+            legend
             
         end
         function res=simulateTASfit(DP,time,G,Gpulse,kdisCT,kdisEx,varargin)
@@ -757,9 +748,6 @@ classdef deviceparams
             set(gca, 'XScale', 'log')
             legend('boxoff')
             hold off
-            
-
-    
         end
         function resultssum=PPPCequation(DP,G,Gpump,pppcfactordis,pppcfactorform,pppcfactorexcdis,pppcfactorexcref)
 
