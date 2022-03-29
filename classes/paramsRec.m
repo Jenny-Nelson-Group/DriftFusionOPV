@@ -185,9 +185,11 @@ classdef paramsRec
             offset=Prec.params.Ex.DG0-Prec.params.CT.DG0;
             kbT=Prec.const.kb*Prec.const.T;%in eV
             try
-                 Prec.results.Qi=(Prec.params.CT.results.krTot+Prec.params.Ex.results.krTot*exp(-offset/kbT)/Prec.params.RCTE)/(Prec.params.CT.results.knr+Prec.params.Ex.results.knr*exp(-offset/kbT)/Prec.params.RCTE+Prec.params.CT.results.krTot+Prec.params.Ex.results.krTot*exp(-offset/kbT)/Prec.params.RCTE);
-                 Prec.results.Qe=1/((1+(Prec.results.pe-1)*Prec.results.Qi)/Prec.results.pe/Prec.results.Qi);
-                 Prec.results.Dvnr=Prec.const.kb*Prec.const.T*(log((1+(Prec.results.pe-1)*Prec.results.Qi)/Prec.results.pe/Prec.results.Qi));
+                 radiativeDecay     = Prec.params.CT.results.krTot + Prec.params.Ex.results.krTot * exp(-offset / kbT) / Prec.params.RCTE;
+                 nonRadiativeDecay  = Prec.params.CT.results.knr   + Prec.params.Ex.results.knr   * exp(-offset / kbT) / Prec.params.RCTE;                
+                 Prec.results.Qi    = radiativeDecay / (radiativeDecay + nonRadiativeDecay);
+                 Prec.results.Qe    = 1 / ((1 + (Prec.results.pe - 1) * Prec.results.Qi) / Prec.results.pe / Prec.results.Qi);
+                 Prec.results.Dvnr  = Prec.const.kb*Prec.const.T*(log((1+(Prec.results.pe-1)*Prec.results.Qi)/Prec.results.pe/Prec.results.Qi));
             catch 
                 disp("get the pe first")
                 
@@ -263,10 +265,10 @@ classdef paramsRec
         function Prec=absorptionSIm(Prec)
             
             %%%%%%%%%%%%%%%%%%%absorption spectrum%%%%%%%%%%%%%%%%%
-            Prec.params.CT=paramsRec.absorptionstate(Prec.params.CT,Prec.const);
-            Prec.params.Ex=paramsRec.absorptionstate(Prec.params.Ex,Prec.const);
-            Einterp=Prec.const.Edistribution;
-            bbinterp=interp1(Prec.const.bb(:,1),Prec.const.bb(:,2),Einterp);
+            Prec.params.CT = paramsRec.absorptionstate(Prec.params.CT, Prec.const);
+            Prec.params.Ex = paramsRec.absorptionstate(Prec.params.Ex, Prec.const);
+            Einterp = Prec.const.Edistribution;
+            bbinterp = interp1(Prec.const.bb(:,1),Prec.const.bb(:,2),Einterp);
                         
 
             wavei=0;
@@ -292,30 +294,31 @@ classdef paramsRec
             %%%%%%%%%%%%%absorption
             int=1;
             for E=Einterp
-                AbsLJ(int)=1-exp(-2*Prec.params.tickness*alphaLJ(int));
+                AbsLJ(int) = 1-exp(-2*Prec.params.tickness*alphaLJ(int));
                 int=int+1;
             end
             %%%%%%%%%%%%JSC rad%%%%%%%%%%%%%%%%%%%%%%
             
-            solarphlux= interp1(Prec.const.solflux(:,1),Prec.const.solflux(:,2),Einterp);
-            Jscrad=trapz(Einterp, AbsLJ.*solarphlux);
-            J0rad=trapz(Einterp, AbsLJ.*bbinterp);
-            pebot=trapz(Einterp,alphaLJ.*bbinterp*4*Prec.params.tickness*Prec.params.nie*Prec.params.nie);
-            Prec.results.R0rad=trapz(Einterp,alphaLJ.*bbinterp*4*Prec.params.nie*Prec.params.nie*1e-2);% here R0rad is in cm-3%Epsilon,out isconsidered ot be equal to pi according to equation 23 in 10.1103/PhysRevB.90.035211
-            Prec.results.Jscrad=Jscrad;
-            Prec.results.AbsLJ=AbsLJ;
-            Prec.results.alphaLJ=alphaLJ;
-            Prec.results.pe=J0rad/pebot;
-            Prec.results.J0rad=J0rad*Prec.results.pe;
-            Prec.results.Vocrad=Prec.const.kb*Prec.const.T*(log(Prec.results.Jscrad/Prec.results.J0rad+1));
+            solarphlux           = interp1(Prec.const.solflux(:,1),Prec.const.solflux(:,2),Einterp);
+            Jscrad               = trapz(Einterp, AbsLJ   .* solarphlux);
+            J0rad                = trapz(Einterp, AbsLJ   .* bbinterp);
+            integralRadRec       = trapz(Einterp, alphaLJ .* bbinterp * 4 * Prec.params.tickness * Prec.params.nie^2);
+            radiativeEmission    = alphaLJ .* bbinterp * 4 * Prec.params.nie^2 * 1e-2;
+            Prec.results.R0rad   = trapz(Einterp, radiativeEmission);% here R0rad is in cm-3%Epsilon,out isconsidered ot be equal to pi according to equation 23 in 10.1103/PhysRevB.90.035211  %radiative emission rate based on black body radiation
+            Prec.results.Jscrad  = Jscrad;
+            Prec.results.AbsLJ   = AbsLJ;
+            Prec.results.alphaLJ = alphaLJ;
+            Prec.results.pe      = J0rad / integralRadRec;
+            Prec.results.J0rad   = J0rad;
+            Prec.results.Vocrad  = Prec.const.kb*Prec.const.T*(log(Prec.results.Jscrad/Prec.results.J0rad+1));
             % semilogy(results.Einterp,results.AbsLJ)
             
         end
         function Prec=calcall(Prec)
-            Prec=paramsRec.update(Prec);
-            Prec=paramsRec.calcFCWD(Prec);
-            Prec=paramsRec.absorptionSIm(Prec);
-            Prec=paramsRec.Calcrates(Prec);
+            Prec = paramsRec.update(Prec);
+            Prec = paramsRec.calcFCWD(Prec);
+            Prec = paramsRec.absorptionSIm(Prec);
+            Prec = paramsRec.Calcrates(Prec);
 
         end
     end

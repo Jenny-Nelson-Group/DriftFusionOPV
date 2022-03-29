@@ -160,21 +160,32 @@ classdef dfplot
             xlabel('Time [s]')
             ylabel('PL [cm-2s-1]')
         end
-        function [Jsc,Voc,FF,JJ,VV]=JV_new(sol,figureplot)
-            J = dfana.calcJ(sol);
-            Vapp= dfana.calcVapp(sol);
+        function [Jsc,Voc,FF,JJ,VV]=JV_new(sol,figureplot,varargin)
+            if isempty(varargin)
+                Rshunt=1e15;
+            else
+                Rshunt=varargin{1};
+                if Rshunt==0
+                    Rshunt=1e15;
+                end
+            end
+                J = dfana.calcJ(sol);
+                Vapp= dfana.calcVapp(sol);
+            
+            if figureplot==1
+                hold on
+                Jtot = J.tot(:,end) + Vapp/Rshunt;
+                plot(Vapp, Jtot*1000);
+                
+                ylim([-30, 10]);
+                %ylim([-30e-3, 10e-3]);
+                xlabel('Applied voltage [V]')
+                ylabel('Current density [mA/cm^2]');
+                hold off
+            end
             Jsc=-interp1(Vapp,J.tot(:,end),0)*1e3;%in mAcm-2
             Voc=interp1(J.tot(:,end),Vapp,0);
             FF=max(-Vapp.*J.tot(:,end)*1e3)/(Voc*Jsc);
-            if figureplot==1
-                hold on
-                plot(Vapp, J.tot(:,end))
-                
-                ylim([-30e-3, 10e-3]);
-                xlabel('Applied voltage [V]')
-                ylabel('Current density [Acm-2]');
-                hold off
-            end
             JJ=J.tot(:,end)*1e3;
             VV=Vapp;
         end
@@ -495,23 +506,24 @@ classdef dfplot
             loglog(t, (CTsum-CTsum(1)))%/max((Exsum-Exsum(1))))
             hold on
             loglog(t, (Exsum-Exsum(1)))%/max((Exsum-Exsum(1))))
-            %             semilogx(t, (nsum-nsum(1)))%/max((Exsum-Exsum(1))))
+                        semilogx(t, (nsum-nsum(1)))%/max((Exsum-Exsum(1))))
             
             xlabel('Time [s]')
             ylabel(' Excited state density [cm-2]')
-            xlim([max(t(1),1e-7), t(end)])
+            xlim([max(t(1),1e-9), t(end)])
             legend("CT","Ex","electron")
             %             figure(17)
             subplot(1,2,2)
             
-            loglog(t-tstart, (CTsum-CTsum(1))/max((Exsum-Exsum(1))))
+            loglog(t-tstart, (CTsum-CTsum(1))/max((CTsum-CTsum(1))))
             hold on
             loglog(t-tstart,(Exsum-Exsum(1))/max((Exsum-Exsum(1))))
-            %                         semilogx(t-tstart, (nsum-nsum(1))/max((nsum-nsum(1))))
+                                    semilogx(t-tstart, (nsum-nsum(1))/max((nsum-nsum(end))))
             xlabel('Time [s]')
             ylabel(' normalisedExcited state density [cm-2]')
-            xlim([max(t(1),1e-7), t(end)])
+            xlim([max(t(1),1e-9), t(end)])
             legend("CT","Ex","electron")
+            ylim([1e-3,1.1])
             %
             %             xlabel('Time [s]')
             %             ylabel('Normalised Excited state density [cm-2]')
@@ -682,7 +694,46 @@ classdef dfplot
             subplot(3,1,3);
             dfplot.x2d(sol, x, {CT, Ex}, {'CT', 'Ex'}, {'-', '-'}, 'Excited state density [cm-3]', tarr, xrange, 0, 1)
         end
-        
+        function Electrondistrbution(DV,varargin)
+            % Energy Level diagram, and charge densities plotter
+            % SOL = the solution structure
+            % TARR = An array containing the times that you wish to plot
+            % XRANGE = 2 element array with [xmin, xmax]
+            [sol, tarr, pointtype, xrange] = dfplot.sortarg(varargin);
+            [u,t,x,par,n,p,CT,Ex,V] = dfana.splitsol(sol);
+            [Ecb, Evb, Efn, Efp] = dfana.QFLs(sol);
+            
+            figure
+
+            
+            subplot(3,1,1);
+            dfplot.x2d(sol, x, {n}, {'n', 'p'}, {'-', '-'}, 'El carrier density [cm-3]', tarr, xrange, 0, 1);
+            ylim([1e12,1e19])
+            subplot(3,1,2);
+            dfplot.x2d(sol, x, {CT}, {'CT', 'Ex'}, {'-', '-'}, 'Excited state density [cm-3]', tarr, xrange, 0, 1);
+                        XR=par.Layers{2}.XR;
+            XL=par.Layers{2}.XL;
+             CTsum=trapz(x(x>XL & x<XR), CT(:,x>XL & x<XR), 2);
+            Exsum=trapz(x(x>XL & x<XR), Ex(:,x>XL & x<XR), 2);
+                       
+            Luminescence=DV.Prec.params.Ex.results.krE.*Exsum+...
+                DV.Prec.params.CT.results.krE.*CTsum;
+            [peakint,peakpos]=max(Luminescence');
+  subplot(3,1,3);
+            loglog(t, peakint/max(peakint),'LineWidth',2)%/max((Exsum-Exsum(1))))
+            
+            
+            
+            hold on
+            lg=legend();
+            Vstep=sol.params.Experiment_prop.V_fun_arg(2)-sol.params.Experiment_prop.V_fun_arg(1);
+            lg.String{end}=" Electroluminescence intensity "+num2str(Vstep)+" V";
+            
+            xlabel('Time [s]')
+            ylabel('peak intensity [a.u]')
+            ylim([1e-2,1.1])
+            xlim([min(t(1),1e-7),max(t)])
+        end
         function Vxacx(varargin)
             % Potential and ionic charges as a function of position
             [sol, tarr, pointtype, xrange] = dfplot.sortarg(varargin);
@@ -805,11 +856,20 @@ classdef dfplot
                 end
             end
         end
-        function Electroluminescence_multi(DV,layernum,Voltage,Currentdensity,label)
+        function [X,Y]=Electroluminescence_multi(DV,layernum,Voltage,Currentdensity,label,varargin)
             %set Voltage=0 and Currentdensity to the desired value to get
             %the el at fixed current,
             %or Currendensity=0 and voltage to the desired value
             %voltage in Volt and Currentdensity in mA/cm^2
+            %Rshunt 
+            if isempty(varargin)
+                Rshunt=1e15;
+            else
+                Rshunt=varargin{1};
+            if Rshunt==0
+                Rshunt=1e15;
+            end
+            end
             CTsum=0;
             for sol = DV.sol_JV
                 
@@ -822,6 +882,7 @@ classdef dfplot
                     J = dfana.calcJ(sol);
                     Current_density=J.tot(:,end)*1e3;
                     Vapp = dfana.calcVapp(sol);
+                    Current_density=Current_density+Vapp/Rshunt*1e3;%include shunt
                     if Currentdensity==0
                     if max(Vapp>Voltage*0.9 & Vapp<Voltage*1.1)
                         CTsum=mean(trapz(x(x>XL & x<XR), CT(Vapp>Voltage*0.9 & Vapp<Voltage*1.1 ,x>XL & x<XR), 2));
@@ -848,9 +909,11 @@ classdef dfplot
                 
                 xlabel('Energy [eV]')
                 ylabel('Electroluminescence Emission  [a.u]')
-                ylim([max(krE)*1e-3, max(krE)])
+                ylim([max(krE)*1e-1, max(krE)])
                 lg=legend;
                 lg.String{end}=label;
+                X=DV.Prec.const.Edistribution;
+                Y=krE;
                 if Currentdensity==0
                     title(['electroluminescence at ' num2str(Voltage) ' V'])
                 else
@@ -1021,10 +1084,10 @@ classdef dfplot
                 semilogy(DV.Prec.const.Edistribution,krE)
 
                 X=DV.Prec.const.Edistribution;
-                Y=krE/max(krE);
+                Y=krE;
                 xlabel('Energy [eV]')
                 ylabel('Photoluminescence Emission  [a.u]')
-                ylim([max(krE)*1e-3, max(krE)])
+                ylim([max(krE)*1e-1, max(krE)])
 
                 title(['Photoluminescence at under ' num2str(G) ' LI '])
                 Rec_Rate_rad=DV.Prec.params.Ex.results.krTot*Exsum+DV.Prec.params.CT.results.krTot*CTsum;
@@ -1558,24 +1621,23 @@ classdef dfplot
             nsum=trapz(x(x>XL & x<XR), n(:,x>XL & x<XR), 2)/(XR-XL);
            if  holdfig==1
            else
-                        loglog(t, Vapp/max(Vapp),'-*','LineWidth',2,'Color',Colorlist(kk,:))%/max((Exsum-Exsum(1))))
+                        semilogx(t, Vapp/max(Vapp),'-*','LineWidth',2,'Color',Colorlist(kk,:))%/max((Exsum-Exsum(1))))
                                               lg=legend();
             lg.String{end}="voltage step";
+                      hold on
            end
             
-                       Vapp= dfana.calcVapp(sol);
-            Jsc=-interp1(Vapp,J.tot(:,end),0)*1e3;%in mAcm-2
-            Voc=interp1(J.tot(:,end),Vapp,0);
-            FF=max(-Vapp.*J.tot(:,end)*1e3)/(Voc*Jsc);
-            if figureplot==1
-                hold on
-                plot(Vapp, J.tot(:,end))
-  
+            J = dfana.calcJ(sol);
+
+                semilogx(t, J.tot(:,end)./max(J.tot(:,end)),'-o','LineWidth',2,'Color',Colorlist(kk+1,:))
+              lg=legend();
+            lg.String{end}="current"+name;
+            
             Luminescence=DV.Prec.params.Ex.results.krE.*Exsum+...
                 DV.Prec.params.CT.results.krE.*CTsum;
             [peakint,peakpos]=max(Luminescence');
-            hold on
-            loglog(t, peakint/max(peakint),'LineWidth',2,'Color',Colorlist(kk,:))%/max((Exsum-Exsum(1))))
+  
+            semilogx(t, peakint/max(peakint),'LineWidth',2,'Color',Colorlist(kk,:))%/max((Exsum-Exsum(1))))
             
             
             
