@@ -429,9 +429,9 @@ classdef deviceparams
                 DP = Xgrid(DP);
                 DP=update_time(DP);
                 DP=Timemesh(DP);
-                DP.results.J0 = CT0*tickness*q*1e3* (Prec.params.CT.results.knr + Prec.params.Ex.results.knr * exp(-offset/kbT)/Prec.params.RCTE);
-                DP.results.DVnr = -kbT*log(Prec.results.J0rad/DP.results.J0);
-                DP.results.Voc=Prec.results.Vocrad-DP.results.DVnr;
+                DP.results.J0 = CT0*tickness*q*1e3* (Prec.params.CT.results.knr + Prec.params.CT.results.krTot + (Prec.params.Ex.results.knr + Prec.params.Ex.results.krTot) * exp(-offset/kbT)/Prec.params.RCTE);
+                DP.results.DVnr = -kbT*log(Prec.results.J0rad / DP.results.J0);
+                DP.results.Voc = Prec.results.Vocrad - DP.results.DVnr;
                 DP.results.Vocrad=Prec.results.Vocrad;
                 DP.light_properties.Genstrength  =Prec.results.Jscrad/tickness/q/1e3;%for uniform generation in cm-3 one sun equivalent
                 if DP.light_properties.OM == 2
@@ -522,7 +522,7 @@ classdef deviceparams
             xlabel('Energy [eV]')
             ylabel('El Emission  [a.u]')
             ylim([1*1e-4, 1])
-            xlim([1,2])
+            xlim([0.5,2])
             legend
             
         end
@@ -683,7 +683,7 @@ classdef deviceparams
             xlabel('Energy [eV]')
             ylabel('PL Emission  [a.u]')
             ylim([1*1e-4, 1])
-            xlim([1,2])
+            xlim([0.5,2])
             legend
             
         end

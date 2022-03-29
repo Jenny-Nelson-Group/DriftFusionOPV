@@ -4,28 +4,29 @@
 % emission spectra based on the properties of the states 
 
 %% SET PARAMETERS and make Device
-
 % Set and adjust the Recombination Parameters
 Prec                        = paramsRec;                    % initiliase the recombination parameters (default values)
-offset                      = 0.13;                  % eV    % energy difference between the excited state and the CT state
+offset                      = 0.25;                  % eV    % energy difference between the excited state and the CT state
 Prec.params.tickness        = 100 * 1e-9;           % m     % thickness of the active layer
-Prec.params.Ex.DG0          = 1.33;                 
+Prec.params.Ex.DG0          = 1.36;                 
 Prec.params.CT.DG0          = Prec.params.Ex.DG0 - offset;
-Prec.params.Ex.f            = 5;
-Prec.params.CT.f            = 3e-2;
+Prec.params.Ex.f            = 2.56;
+Prec.params.CT.f            = 2e-4;
 Prec.params.Ex.sigma        = 0.01;
 Prec.params.CT.sigma        = 0.01;
 Prec.params.Ex.numbrestate  = 1;
 Prec.params.CT.numbrestate  = 1;
-Prec.params.Ex.L0           = 0.07;%10
-Prec.params.Ex.Li           = 0.015;%15
-Prec.params.CT.L0           = 0.07;%18  %CT smoothing
-Prec.params.CT.Li           = 0.07;%15
-Prec.params.RCTE            = 1e-1;
-Prec.params.Excitondesnity  = 5e26;
-Prec.params.Vstar           = 0.001;
+Prec.params.Ex.L0           = 0.06; %10
+Prec.params.Ex.Li           = 0.045; %15   %0.04-0.150
+Prec.params.CT.L0           = 0.07; %18  %CT smoothing
+Prec.params.CT.Li           = 0.1;  %15
+Prec.params.RCTE            = 1e-2;
+Prec.params.Excitondesnity  = 1e26;
+Prec.params.Vstar           = 0.000;
 Prec.const.T                = 300;
 Prec                        = paramsRec.calcall(Prec); % Update the Recombination Parameters
+
+%check the Huang-Rhys  factore
 
 krecCT  = Prec.params.CT.results.knr;
 krecex  = Prec.params.Ex.results.knr;
@@ -37,8 +38,8 @@ Voc     = Prec.results.Vocrad - Prec.results.Dvnr;
 activelayer = 2;        % Active Layer Index                % integer
 NC          = 2e19;     % Number of Charge Carriers         % cm^-3
 Kfor        = 1e-10;    % Rate Constant CS to CT            % cm^3 / s
-kdis        = 1e10;     % Rate Constant CT dissociation     % cm^3 / s
-kdisex      = 1e11;     % Rate Constatn Ex dissociation     % cm^3 / s
+kdis        = 1e10;     % Rate Constant CT dissociation     % 1 / s
+kdisex      = 1e11;     % Rate Constatn Ex dissociation     % 1 / s
 mobility    = 5e-4;     % Charge Carrier Mobility           % cm^2 / V / s
 
 % deviceParameterFile = uigetfile('parameters\DeviceParameters_Default.xlsx');
