@@ -301,15 +301,15 @@ classdef paramsRec
             
             solarphlux           = interp1(Prec.const.solflux(:,1),Prec.const.solflux(:,2),Einterp);
             Jscrad               = trapz(Einterp, AbsLJ   .* solarphlux);
-            J0rad_ideal          = trapz(Einterp, AbsLJ   .* bbinterp);       %J0rad if the emission probability is = 1 (Outgoing Photon Flux)
+            J0rad                = trapz(Einterp, AbsLJ   .* bbinterp);
             integralRadRec       = trapz(Einterp, alphaLJ .* bbinterp * 4 * Prec.params.tickness * Prec.params.nie^2);
             radiativeEmission    = alphaLJ .* bbinterp * 4 * Prec.params.nie^2 * 1e-2;
             Prec.results.R0rad   = trapz(Einterp, radiativeEmission);% here R0rad is in cm-3%Epsilon,out isconsidered ot be equal to pi according to equation 23 in 10.1103/PhysRevB.90.035211  %radiative emission rate based on black body radiation
             Prec.results.Jscrad  = Jscrad;
             Prec.results.AbsLJ   = AbsLJ;
             Prec.results.alphaLJ = alphaLJ;
-            Prec.results.pe      = J0rad_ideal / integralRadRec;
-            Prec.results.J0rad   = J0rad_ideal * Prec.results.pe;
+            Prec.results.pe      = J0rad / integralRadRec;
+            Prec.results.J0rad   = J0rad;
             Prec.results.Vocrad  = Prec.const.kb*Prec.const.T*(log(Prec.results.Jscrad/Prec.results.J0rad+1));
             % semilogy(results.Einterp,results.AbsLJ)
             

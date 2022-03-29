@@ -429,7 +429,7 @@ classdef deviceparams
                 DP = Xgrid(DP);
                 DP=update_time(DP);
                 DP=Timemesh(DP);
-                DP.results.J0 = CT0*tickness*q*1e3* (Prec.params.CT.results.knr + Prec.params.CT.results.krTot + (Prec.params.Ex.results.knr + Prec.params.Ex.results.krTot) * exp(-offset/kbT)/Prec.params.RCTE);
+                DP.results.J0 = CT0*tickness*q*1e3 * (Prec.params.CT.results.knr + (Prec.params.Ex.results.knr) * exp(-offset/kbT) / Prec.params.RCTE) + Prec.results.J0rad;
                 DP.results.DVnr = -kbT*log(Prec.results.J0rad / DP.results.J0);
                 DP.results.Voc = Prec.results.Vocrad - DP.results.DVnr;
                 DP.results.Vocrad=Prec.results.Vocrad;

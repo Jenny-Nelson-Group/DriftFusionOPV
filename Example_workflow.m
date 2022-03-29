@@ -5,6 +5,7 @@
 
 %% SET PARAMETERS and make Device
 % Set and adjust the Recombination Parameters
+
 Prec                        = paramsRec;                    % initiliase the recombination parameters (default values)
 offset                      = 0.25;                  % eV    % energy difference between the excited state and the CT state
 Prec.params.tickness        = 100 * 1e-9;           % m     % thickness of the active layer
@@ -16,17 +17,15 @@ Prec.params.Ex.sigma        = 0.01;
 Prec.params.CT.sigma        = 0.01;
 Prec.params.Ex.numbrestate  = 1;
 Prec.params.CT.numbrestate  = 1;
-Prec.params.Ex.L0           = 0.06; %10
-Prec.params.Ex.Li           = 0.045; %15   %0.04-0.150
-Prec.params.CT.L0           = 0.07; %18  %CT smoothing
-Prec.params.CT.Li           = 0.1;  %15
+Prec.params.Ex.L0           = 0.06;  %0.10
+Prec.params.Ex.Li           = 0.045; %0.15   %0.04-0.150
+Prec.params.CT.L0           = 0.07;  %0.18  %CT smoothing
+Prec.params.CT.Li           = 0.1;   %0.15
 Prec.params.RCTE            = 1e-2;
 Prec.params.Excitondesnity  = 1e26;
 Prec.params.Vstar           = 0.000;
 Prec.const.T                = 300;
 Prec                        = paramsRec.calcall(Prec); % Update the Recombination Parameters
-
-%check the Huang-Rhys  factore
 
 krecCT  = Prec.params.CT.results.knr;
 krecex  = Prec.params.Ex.results.knr;
@@ -42,11 +41,11 @@ kdis        = 1e10;     % Rate Constant CT dissociation     % 1 / s
 kdisex      = 1e11;     % Rate Constatn Ex dissociation     % 1 / s
 mobility    = 5e-4;     % Charge Carrier Mobility           % cm^2 / V / s
 
-% deviceParameterFile = uigetfile('parameters\DeviceParameters_Default.xlsx');
-% if isequal(deviceParameterFile,0)
-%     deviceParameterFile = 'DeviceParameters_Default.xlsx';
-% end
-deviceParameterFile = 'DeviceParameters_Default.xlsx';
+deviceParameterFile = uigetfile('parameters\DeviceParameters_Default.xlsx');
+if isequal(deviceParameterFile,0)
+    deviceParameterFile = 'DeviceParameters_Default.xlsx';
+end
+%deviceParameterFile = 'DeviceParameters_Default.xlsx';
 DP = deviceparams(['parameters\',deviceParameterFile]);
 
 DP.light_properties.OM      = 0; %to consider the transfer matrix generation profile
