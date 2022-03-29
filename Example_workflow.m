@@ -5,7 +5,7 @@
 
 %% SET PARAMETERS and make Device
 % Set and adjust the Recombination Parameters
-startup; % add folders to path
+addpath(genpath(pwd)); % add folders to path
 
 Prec                        = paramsRec;                    % initiliase the recombination parameters (default values)
 offset                      = 0.25;                  % eV    % energy difference between the excited state and the CT state
