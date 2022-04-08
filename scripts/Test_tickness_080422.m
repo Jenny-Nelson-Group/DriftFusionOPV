@@ -18,7 +18,7 @@ Prec.params.Ex.Li           = 0.045; %0.15   %0.04-0.150
 Prec.params.CT.L0           = 0.07;  %0.18  %CT smoothing
 Prec.params.CT.Li           = 0.1;   %0.15
 Prec.params.RCTE            = 1e-2;
-Prec.params.Excitondesnity  = 1e27;
+Prec.params.Excitondesnity  = 5e27;
 Prec.params.Vstar           = 0.000;
 Prec.const.T                = 300;
 Prec                        = paramsRec.calcall(Prec); % Update the Recombination Parameters
@@ -44,10 +44,13 @@ end
 %deviceParameterFile = 'DeviceParameters_Default.xlsx';
 DP = deviceparams(['parameters\',deviceParameterFile]);
 %%
+clear tableres
+
 Thickness_list=[10,20,40,60,80,100,200,400];
 count=0;
 for tickness_active_layer=Thickness_list
 Prec.params.tickness        = tickness_active_layer * 1e-9;           % m     % thickness of the active layer
+Prec.params.Excitondesnity  = 5e27;
 Prec                        = paramsRec.calcall(Prec); % Update the Recombination Parameters
 
 DP.light_properties.OM      = 0; %to consider the transfer matrix generation profile
@@ -92,6 +95,16 @@ DP = DP.generateDeviceparams(NC, activelayer, mobility, kdis, kdisex, Prec, Kfor
         tableres(count).AL_thickness=tickness_active_layer;
         tableres(count).temp=temp;
         tableres(count).Kfor=Kfor;
+        tableres(count).Jscrad=Prec.results.Jscrad;
         pause(0.1)
     end
 end
+%%
+% tableres=struct2table(tableres);
+figure
+plot(tableres.AL_thickness,tableres.Jsc,'*','DisplayName',"Jsc from DD")
+hold on
+plot(tableres.AL_thickness,tableres.Jscrad,'*','DisplayName',"Ideal Jsc from Prec")
+            xlabel('Tickness [nm]')
+            ylabel('current density  [mA cm-2 ]')
+legend
