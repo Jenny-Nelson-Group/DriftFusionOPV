@@ -628,53 +628,104 @@ classdef deviceparams
             ylim([1*1e-2, 1])
             xlim([1,2])            
         end
-        function simulate_TCSPC(DP,Prec,G,Gpulse,fighandle,varargin)
-            %if varagin>6 hold the figure
-            kk=2;
+        function simulate_TCSPC(DP,Prec,Background_Ex_Gen_rate,Laser_Ex_gen_rate,laser_width,exp_length,legendname)
+            %laser_width and exp_length in ns
+            % 
+            
+            kk=2;% active layer number
+            % Get the equilibrium solution first
             tspan = [0 1e-1];
             u0 = [DP.Layers{kk}.ni,DP.Layers{kk}.ni,DP.Layers{kk}.CT0,DP.Layers{kk}.Ex0];            
-            [t,yeq] = ode15s(@(t,u) kineticmodel(DP,kk,u,G,0), tspan, u0);
-            tspan = [0 1e-10];
+            [t,yeq] = ode15s(@(t,u) kineticmodel(DP,kk,u,Background_Ex_Gen_rate,0), tspan, u0);
             u0 = yeq(end,:);
-            [t,y] = ode15s(@(t,u) kineticmodel(DP,kk,u,G+Gpulse,0), tspan, u0);
-            tspan = [0 10E-9];
-            u0 = y(end,:);
-            [t,y] = ode15s(@(t,u) kineticmodel(DP,kk,u,G,0), tspan, u0);
+            % run the solution with the laser on
+            tspan_laser = [0 laser_width*1e-9];
+            [t_Laser,y_Laser] = ode15s(@(t,u) kineticmodel(DP,kk,u,Background_Ex_Gen_rate+Laser_Ex_gen_rate,0), tspan_laser, u0);
+            u0 = y_Laser(end,:);
+            CTsum_Laser=y_Laser(:,3);
+            Exsum_Laser=y_Laser(:,4);
+            krE_Laser=Prec.params.CT.results.krE.*CTsum_Laser+Prec.params.Ex.results.krE.*Exsum_Laser;
+            % run the solution after the laser pulse
+            tspan = [0 exp_length*1e-9];           
+            [t,y] = ode15s(@(t,u) kineticmodel(DP,kk,u,Background_Ex_Gen_rate,0), tspan, u0);
             CTsum=y(:,3);
             Exsum=y(:,4);
             krE=Prec.params.CT.results.krE.*CTsum+Prec.params.Ex.results.krE.*Exsum;
-            figure(fighandle)
-            subplot(1,3,1)
-            if nargin>=6 & varargin{1}==1
-                hold on
-            end
-%             semilogx(t*1e12,(y-yeq(end,:))./max(y-yeq(end,:)),'-o')
             [Maxlum,Peakpos]=max(krE');
-    
+            [Maxlum_Laser,Peakpos_Laser]=max(krE_Laser');
+            ccdens_Laser=y_Laser(:,1);%/Laser_Ex_gen_rate/laser_width;     
+            ccdens=y(:,1);%/Laser_Ex_gen_rate/laser_width;
+            t=t_Laser(end)+t;
+            
+            time=[t_Laser*1e9;t*1e9];
+%             figure
+            subplot(2,3,1)
+             title('normalised PL peak intensity')
+            semilogy(time,[(Maxlum_Laser)./max(Maxlum_Laser),(Maxlum)./max(Maxlum)],"DisplayName",legendname)
+            hold on
+%             semilogy(t*1e9,(Maxlum)./max(Maxlum))
+            xlabel('Time [ns]')
+            ylabel('normalised TCPSC signal  [a.u]')
+            ylim([1e-6 1])
+                        legend()
 
-            semilogy(t*1e9,(Maxlum-min(Maxlum))./max(Maxlum-min(Maxlum)))
+            subplot(2,3,2)
+            title('absolute PL peak intensity')
+            semilogy(time,[(Maxlum_Laser),(Maxlum)],"DisplayName",legendname)
+            hold on
+%             semilogy(t*1e9,(Maxlum)./max(Maxlum))
             xlabel('Time [ns]')
             ylabel('TCPSC signal  [a.u]')
-            ylim([1e-6 1])
-            if nargin>=7
-                lg=legend;
-                lg.String{end}=varargin{2};
+             ylim([Maxlum(end) 1.1*max(max([(Maxlum_Laser),(Maxlum)]))])
+                         legend()
+
+             
+                        subplot(2,3,3)
+            title('normalised PL against wavelength')
+            colormap cool
+            PL_emission=[krE_Laser;krE];
+            for tt=logspace(0,log(max(time)*0.99)/log(10),6)
+            semilogy(Prec.const.Edistribution,PL_emission(find(time>tt,1),:)/max(PL_emission(find(time>tt,1),:)),"DisplayName",[legendname ' @ ' num2str(tt,'%1.1e') ' ns'])
+            hold on
             end
-             subplot(1,3,2)
-            if nargin>=6 & varargin{1}==1
-                hold on
-            end
-           semilogx(t*1e9,Prec.const.Edistribution(Peakpos))
-                        xlabel('Time [ns]')
+            hold off
+%             semilogy(t*1e9,(Maxlum)./max(Maxlum))
+            xlabel('energy in [eV]')
+            ylabel('TCPSC signal  [a.u]')
+            ylim([1e-4 1.1])
+            legend()
+%             ylim([1e-6 1])
+            subplot(2,3,4)
+                        title('PL peak  energy')
+
+            semilogx(time,[Prec.const.Edistribution(Peakpos_Laser),Prec.const.Edistribution(Peakpos)],"DisplayName",legendname)
+            hold on
+%             semilogx(t*1e9,Prec.const.Edistribution(Peakpos))
+            xlabel('Time [ns]')
             ylabel('Peak pos[eV]')
-            subplot(1,3,3)
-            ccdens=y(:,1)/Gpulse/1e-10;
-            if nargin>=6 & varargin{1}==1
-                hold on
-            end
-            semilogx(t*1e9,ccdens)
+            xlim([1e-1 max(t*1e9)])
+                        legend()
+
+                        subplot(2,3,5)
+                        title('charge carrier density evolution')
+            semilogx(time,[ccdens_Laser;ccdens],"DisplayName",legendname)
+            hold on 
+%             semilogx(t*1e9,ccdens)
+            xlim([1e-1 max(t*1e9)])
+            xlabel('Time [ns]')
+            ylabel('Charge carrier density  [a.u]')
+                        legend()
+
+            subplot(2,3,6)
+            title('charge carrier density normalised per laser intensity')
+            semilogx(time,[ccdens_Laser/Laser_Ex_gen_rate/laser_width;ccdens/Laser_Ex_gen_rate/laser_width],"DisplayName",legendname)
+            hold on 
+%             semilogx(t*1e9,ccdens)
+            xlim([1e-1 max(t*1e9)])
             xlabel('Time [ns]')
             ylabel('Charge carrier density /pulse intensity [a.u]')
+                        legend()
+
         end
         function [X,Y,Z]=simulate_PL(DP,Prec,fighandle)
             [t,y]=solveKineticmodel(DP,1e25,0);
