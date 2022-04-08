@@ -109,7 +109,7 @@ classdef deviceparams
             x=0;
             for ii=1:1:DP.layers_num
                 if(ii==1)
-                    bulk_layer_thickness=DP.Layers{ii}.tp-DP.Layers{ii}.tinterR-+DP.Layers{ii}.XiL-DP.Layers{ii}.tinterL-+DP.Layers{ii}.XiR;
+                    bulk_layer_thickness=DP.Layers{ii}.tp-DP.Layers{ii}.tinterR-DP.Layers{ii}.XiL-DP.Layers{ii}.tinterL-DP.Layers{ii}.XiR;
                     
                     x=0:DP.Layers{ii}.XipL:DP.Layers{ii}.XiL;
                     if isempty(x)
@@ -133,14 +133,24 @@ classdef deviceparams
                     
                 else
                     bulk_layer_thickness=DP.Layers{ii}.tp-DP.Layers{ii}.tinterR-+DP.Layers{ii}.XiL-DP.Layers{ii}.tinterL-+DP.Layers{ii}.XiR;
-                    
-                    DP.Layers{ii}.XL=max(x)+DP.Layers{ii}.XipL;
-                    x=[x,max(x)+DP.Layers{ii}.XipL:DP.Layers{ii}.XipL:DP.Layers{ii}.XiL];
-                    x=[x,max(x)+DP.Layers{ii}.epointsL:DP.Layers{ii}.epointsL:max(x)+DP.Layers{ii}.tinterL];
-                    x=[x,max(x)+DP.Layers{ii}.pp:DP.Layers{ii}.pp:max(x)+bulk_layer_thickness];
-                    x=[x,max(x)+DP.Layers{ii}.epointsR:DP.Layers{ii}.epointsR:max(x)+DP.Layers{ii}.tinterR];
-                    x=[x,max(x)+DP.Layers{ii}.XipR:DP.Layers{ii}.XipR:max(x)+DP.Layers{ii}.XiR];
-                    DP.Layers{ii}.XR=max(x);
+                    if bulk_layer_thickness<0
+                        bulk_layer_thickness=DP.Layers{ii}.tp;
+                        if bulk_layer_thickness < 1e-7
+                            error('layer is thinner than 1 nm , the drift diffusion equation are not valid' )
+                        end
+                        disp(['Warning: the layer number' num2str(ii) ' is thinner than the interface layer properties set in the excel file \n , the interface layers will be neglected'])
+                        DP.Layers{ii}.XL=max(x)+0.5e-7;
+                        x=[x,max(x)+1e-7:0.5e-7:max(x)+bulk_layer_thickness];
+                        DP.Layers{ii}.XR=max(x);
+                    else
+                        DP.Layers{ii}.XL=max(x)+DP.Layers{ii}.XipL;
+                        x=[x,max(x)+DP.Layers{ii}.XipL:DP.Layers{ii}.XipL:DP.Layers{ii}.XiL];
+                        x=[x,max(x)+DP.Layers{ii}.epointsL:DP.Layers{ii}.epointsL:max(x)+DP.Layers{ii}.tinterL];
+                        x=[x,max(x)+DP.Layers{ii}.pp:DP.Layers{ii}.pp:max(x)+bulk_layer_thickness];
+                        x=[x,max(x)+DP.Layers{ii}.epointsR:DP.Layers{ii}.epointsR:max(x)+DP.Layers{ii}.tinterR];
+                        x=[x,max(x)+DP.Layers{ii}.XipR:DP.Layers{ii}.XipR:max(x)+DP.Layers{ii}.XiR];
+                        DP.Layers{ii}.XR=max(x);
+                    end
                 end
             end
             DP.Xgrid_properties=x;
@@ -440,9 +450,10 @@ classdef deviceparams
                 DP.External_prop.leftboundary_fermi_energy=DP.Layers{1}.Phi;
                 DP.External_prop.Rightboundary_fermi_energy=DP.Layers{end}.Phi;
                 DP=update_boundary_charge_densities(DP);
-            catch
-                
-                disp("error you need to have varargin={Beff,0} or {Tq,1}");
+            catch ME
+                disp(" check that you provided varargin={Beff,0} or {Tq,1}");
+
+                rethrow(ME)
                 
             end
 
