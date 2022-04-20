@@ -161,12 +161,26 @@ classdef dfplot
             ylabel('PL [cm-2s-1]')
         end
         function [Jsc,Voc,FF,JJ,VV]=JV_new(sol,figureplot,varargin)
+            
+            %this function calculates and plots the JV characthersitic from
+            %the drift diffusion solution of runsolJV
+            %Varargin{1} should be the Rshunt
+            %Varargin{2} should be the name you want for the figure
             if isempty(varargin)
                 Rshunt=1e15;
+                plot_name='undefined';
+                
             else
                 Rshunt=varargin{1};
                 if Rshunt==0
                     Rshunt=1e15;
+                end
+                try
+                    plot_name=varargin{2};
+                    
+                catch
+                    plot_name='undefined';
+                    
                 end
             end
                 J = dfana.calcJ(sol);
@@ -175,7 +189,7 @@ classdef dfplot
             if figureplot==1
                 hold on
                 Jtot = J.tot(:,end) + Vapp/Rshunt;
-                plot(Vapp, Jtot*1000);
+                plot(Vapp, Jtot*1000,'DisplayName',plot_name);
                 
                 ylim([-30, 10]);
                 %ylim([-30e-3, 10e-3]);
