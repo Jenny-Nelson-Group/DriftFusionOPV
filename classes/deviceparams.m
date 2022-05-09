@@ -514,7 +514,64 @@ classdef deviceparams
             legend
 
         end
-        function [X,Y,Z]=simulate_EL(DP,Prec,fighandle)
+                function [X,Y,Z]=simulate_EL(DP,Prec,fighandle)
+            [t,y]=solveKineticmodel(DP,0,1e25);
+            CTsum=y(end,3);
+            Exsum=y(end,4);
+            krE=Prec.params.CT.results.krE*CTsum+Prec.params.Ex.results.krE*Exsum;
+            %krE=Prec.params.CT.results.krE/(Prec.params.CT.results.knr+Prec.params.CT.results.krTot)*CTsum+Prec.params.Ex.results.krE/(Prec.params.Ex.results.knr+Prec.params.Ex.results.krTot)*Exsum;
+            %krE=(Prec.params.CT.results.krE*CTsum*0+Prec.params.Ex.results.krE*Exsum)./(Prec.params.CT.results.knr*CTsum+Prec.params.Ex.results.knr*Exsum);
+            figure(fighandle)
+            subplot(2,4,5)
+            semilogy(Prec.const.Edistribution,krE)
+            hold on
+
+%             semilogy(Prec.const.Edistribution,Prec.params.CT.results.krE*CTsum/max(krE))
+%             semilogy(Prec.const.Edistribution,Prec.params.Ex.results.krE*Exsum/max(krE))
+            X=(Prec.const.Edistribution)';
+%             Y=(krE/max(krE))';
+            Y=(krE)';
+%             Z=(Prec.params.CT.results.krE*CTsum/max(krE))';
+            Z=(Prec.params.CT.results.krE*CTsum)';
+            
+            xlabel('Energy [eV]')
+            ylabel('EL intensity  [a.u]')
+            ylim([1e17, 1e27])
+            xlim([0.5,2])
+%            legend("Exp","ToT","From CT","FromEx")
+
+            
+        end
+        function [X,Y,Z]=simulate_EL_normalized(DP,Prec,fighandle)
+            [t,y]=solveKineticmodel(DP,0,1e25);
+            CTsum=y(end,3);
+            Exsum=y(end,4);
+            krE=Prec.params.CT.results.krE*CTsum+Prec.params.Ex.results.krE*Exsum;
+            %krE=Prec.params.CT.results.krE/(Prec.params.CT.results.knr+Prec.params.CT.results.krTot)*CTsum+Prec.params.Ex.results.krE/(Prec.params.Ex.results.knr+Prec.params.Ex.results.krTot)*Exsum;
+            %krE=(Prec.params.CT.results.krE*CTsum*0+Prec.params.Ex.results.krE*Exsum)./(Prec.params.CT.results.knr*CTsum+Prec.params.Ex.results.knr*Exsum);
+            
+            figure(fighandle)
+            subplot(2,4,6)
+            semilogy(Prec.const.Edistribution,krE/max(krE))
+            hold on
+
+%             semilogy(Prec.const.Edistribution,Prec.params.CT.results.krE*CTsum/max(krE))
+%             semilogy(Prec.const.Edistribution,Prec.params.Ex.results.krE*Exsum/max(krE))
+            X=(Prec.const.Edistribution)';
+            Y=(krE/max(krE))';
+%            Y=(krE)';
+            Z=(Prec.params.CT.results.krE*CTsum/max(krE))';
+%             Z=(Prec.params.CT.results.krE*CTsum)';
+            
+            xlabel('Energy [eV]')
+            ylabel('EL norm. [a.u]')
+            ylim([1E-3, 10])
+            xlim([0.5,2])
+%            legend("Exp","ToT","From CT","FromEx")
+
+            
+        end
+        function [X,Y,Z]=simulate_EL_old(DP,Prec,fighandle)
             [t,y]=solveKineticmodel(DP,0,1e25);
             CTsum=y(end,3);
             Exsum=y(end,4);
@@ -732,23 +789,49 @@ classdef deviceparams
             CTsum=y(end,3);
             Exsum=y(end,4);
             figure(fighandle)
-            subplot(2,2,2)
+            subplot(2,4,7)
             krE=Prec.params.CT.results.krE*CTsum+Prec.params.Ex.results.krE*Exsum;
-            
-            semilogy(Prec.const.Edistribution,krE/max(krE),'DisplayName',"Total contribution",'Color',[1,0,0],'LineWidth',2)
+            %krE=Prec.params.CT.results.krE/(Prec.params.CT.results.knr+Prec.params.CT.results.krTot)*CTsum+Prec.params.Ex.results.krE/(Prec.params.Ex.results.knr+Prec.params.Ex.results.krTot)*Exsum;
+            semilogy(Prec.const.Edistribution,krE)
             hold on
-            semilogy(Prec.const.Edistribution,Prec.params.CT.results.krE*CTsum/max(krE),'--','DisplayName',"CT contribution",'Color',[1, 0.66, 0.59])
-            semilogy(Prec.const.Edistribution,Prec.params.Ex.results.krE*Exsum/max(krE),'DisplayName',"Ex contribution",'Color',[1, 0.66, 0.59])
+%             semilogy(Prec.const.Edistribution,Prec.params.CT.results.krE*CTsum/max(krE))
+%             semilogy(Prec.const.Edistribution,Prec.params.Ex.results.krE*Exsum/max(krE))
             X=(Prec.const.Edistribution)';
-            Y=(krE/max(krE))';
-            Z=(Prec.params.CT.results.krE*CTsum/max(krE))';
+%             Y=(krE/max(krE))';
+%             Z=(Prec.params.CT.results.krE*CTsum/max(krE))';
+            Y=(krE)';
+            Z=(Prec.params.CT.results.krE*CTsum)';
             xlabel('Energy [eV]')
-            ylabel('PL Emission  [a.u]')
-            ylim([1*1e-4, 1])
+            ylabel('PL Intensity  [a.u]')
+            ylim([1e17, 1e27])
             xlim([0.5,2])
-            legend
+%            legend("Exp","ToT","From CT","FromEx")
             
         end
+        function [X,Y,Z]=simulate_PL_normalized(DP,Prec,fighandle)
+            [t,y]=solveKineticmodel(DP,1e25,0);
+            CTsum=y(end,3);
+            Exsum=y(end,4);
+            figure(fighandle)
+            subplot(2,4,8)
+            krE=Prec.params.CT.results.krE*CTsum+Prec.params.Ex.results.krE*Exsum;
+            %krE=Prec.params.CT.results.krE/(Prec.params.CT.results.knr+Prec.params.CT.results.krTot)*CTsum+Prec.params.Ex.results.krE/(Prec.params.Ex.results.knr+Prec.params.Ex.results.krTot)*Exsum;  
+            semilogy(Prec.const.Edistribution,krE/max(krE))
+            hold on
+%             semilogy(Prec.const.Edistribution,Prec.params.CT.results.krE*CTsum/max(krE))
+%             semilogy(Prec.const.Edistribution,Prec.params.Ex.results.krE*Exsum/max(krE))
+            X=(Prec.const.Edistribution)';
+             Y=(krE/max(krE))';
+             Z=(Prec.params.CT.results.krE*CTsum/max(krE))';
+
+            xlabel('Energy [eV]')
+            ylabel('PL norm. [a.u]')
+            ylim([1E-3, 10])
+            xlim([0.5,2])
+%            legend("Exp","ToT","From CT","FromEx")
+            
+        end
+        
         function res=simulateTASfit(DP,time,G,Gpulse,kdisCT,kdisEx,varargin)
             kk=2;
             DP.Layers{kk}.kdis=kdisCT;
