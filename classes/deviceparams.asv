@@ -805,7 +805,7 @@ classdef deviceparams
             legend()
 
         end
-        function [time,PL_emission,wavelength]=simulate_TCSPC_gaussianlaserpulse(DP,Prec,Background_Ex_Gen_rate,Laser_Ex_gen_rate_gauss,Laser_Ex_gen_rate_exp,...
+        function [time,PL_emission,wavelength]=simulate_TCSPC_gaussianlaserpulse(DP,Prec,Background_Ex_Gen_rate,Laser_Ex_gen_rate,...
                 gaussianwidth,exponentialdecay,laser_peak,exp_length,legendname)
             %laser_width and exp_length in ns
             % 
@@ -818,7 +818,7 @@ classdef deviceparams
             u0 = yeq(end,:);
             % run the solution with the laser on
             tspan_laser = [0 exp_length*1e-9];
-            laser_ex_gen_func= @(t) Laser_Ex_gen_rate_exp*exp(-t/exponentialdecay)+Laser_Ex_gen_rate_gauss*exp(-(t-laser_peak*1e-9).^2./(gaussianwidth*1e-9)^2);
+            laser_ex_gen_func= @(t) Laser_Ex_gen_rate*exp(-t/exponentialdecay)*0.1+Laser_Ex_gen_rate*exp(-(t-laser_peak*1e-9).^2./(gaussianwidth)^2);
             [t_Laser,y_Laser] = ode15s(@(t,u) kineticmodel(DP,kk,u,Background_Ex_Gen_rate+laser_ex_gen_func(t),0), tspan_laser, u0);
             u0 = y_Laser(end,:);
             CTsum_Laser=y_Laser(:,3);
@@ -855,24 +855,21 @@ classdef deviceparams
                 hold on
             end
             hold on
-            loglog(time,laser_ex_gen_func(time*1e-9)./max(laser_ex_gen_func(time*1e-9)),'*-',"DisplayName",'normalised laser pulse intensity')
+            loglog(time,laser_ex_gen_func(time)./max(laser_ex_gen_func(time)),"DisplayName",'normalised laser pulse intensity')
 
             %             semilogy(t*1e9,(Maxlum)./max(Maxlum))
             xlabel('Time [ns]')
             ylabel('TCPSC signal normalised [a.u]')
                         xlim([1e-1,exp_length])
 
-             ylim([1e-7 1.1])
+%              ylim([Maxlum(end) 1.1*max(max([(Maxlum_Laser),(Maxlum)]))])
                          legend()
 
                subplot(1,3,3)
             title('normalised PL against wavelength')
-             clist = colormap(jet(6));
-             jj=0;
+            colormap cool
             for tt=logspace(0,log(max(time)*0.99)/log(10),6)
-                jj=jj+1;
-            semilogy(1240./Prec.const.Edistribution,PL_emission(find(time>tt,1),:)/max(PL_emission(find(time>tt,1),:)),"DisplayName",[legendname ' @ ' num2str(tt,'%1.1e') ' ns']...
-                ,'color',clist(jj,:,:))
+            semilogy(1240./Prec.const.Edistribution,PL_emission(find(time>tt,1),:)/max(PL_emission(find(time>tt,1),:)),"DisplayName",[legendname ' @ ' num2str(tt,'%1.1e') ' ns'])
             hold on
             end
             hold off
