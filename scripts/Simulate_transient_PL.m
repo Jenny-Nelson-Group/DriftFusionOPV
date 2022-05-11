@@ -17,7 +17,8 @@ Prec.params.RCTE            = 1e-2; % [1e-2,10] % ratio of CT to Exiton density 
 
 %%
 figure
-for Grate=5e24
+for Grate=5e25
+    
 % Generate a device with the defined parameters
 % Parameters are from Prec which is defined above and from the PINDevice file, which is loaded below
 
