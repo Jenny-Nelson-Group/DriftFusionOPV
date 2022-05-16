@@ -905,11 +905,25 @@ classdef dfplot
                         disp("the JV did not run until the desired voltage")
                     end
                     else
-                        if max(Current_density>Currentdensity*0.9 & Current_density<Currentdensity*1.1)
-                            CTsum=mean(trapz(x(x>XL & x<XR), CT(Current_density>Currentdensity*0.9 & Current_density<Currentdensity*1.1,x>XL & x<XR), 2));
-                            Exsum=mean(trapz(x(x>XL & x<XR), Ex(Current_density>Currentdensity*0.9 & Current_density<Currentdensity*1.1,x>XL & x<XR), 2));
+                        if max(Current_density>Currentdensity )
+                            try
+                                CTsum=mean(trapz(x(x>XL & x<XR), CT(Current_density>Currentdensity*0.9 & Current_density<Currentdensity*1.1,x>XL & x<XR), 2));
+                                Exsum=mean(trapz(x(x>XL & x<XR), Ex(Current_density>Currentdensity*0.9 & Current_density<Currentdensity*1.1,x>XL & x<XR), 2));
+                                if isnan(CTsum)
+                                     error('could not find the right current density')
+                                end
+                            catch ME
+                                disp( ME.message+"\n using an interpolation method ")
+                                CTsum_h=mean(trapz(x(x>XL & x<XR), CT(find(Current_density>Currentdensity,1),x>XL & x<XR), 2));
+                                Exsum_h=mean(trapz(x(x>XL & x<XR), Ex(find(Current_density>Currentdensity,1),x>XL & x<XR), 2));
+                                CTsum_l=mean(trapz(x(x>XL & x<XR), CT(find(Current_density<Currentdensity,end),x>XL & x<XR), 2));
+                                Exsum_l=mean(trapz(x(x>XL & x<XR), Ex(find(Current_density<Currentdensity,end),x>XL & x<XR), 2));
+                                CTsum=(CTsum_h+CTsum_l)/2;
+                                Exsum=(Exsum_l+Exsum_h)/2;
+                            end 
                         else
                             disp("the JV did not run until the desired current density")
+                            
                         end
                     end
                     
