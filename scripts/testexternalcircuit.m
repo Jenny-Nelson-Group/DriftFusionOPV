@@ -230,7 +230,7 @@ eval("DV2=DV_1;");
  
 for Rseries=variablelist
     kk=kk+1;
-    eval("DV2=DV_M"+num2str(Rseries));
+    eval("DV2=DV_MT"+num2str(Rseries));
   figure(2)
     subplot(2,2,1)
 dfplot.JV_new(DV2.sol_JV(1),1)

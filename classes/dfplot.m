@@ -160,12 +160,15 @@ classdef dfplot
             xlabel('Time [s]')
             ylabel('PL [cm-2s-1]')
         end
-        function [Jsc,Voc,FF,JJ,VV]=JV_new(sol,figureplot,varargin)
+        function [Jsc,Voc,FF,JJ,VV]=JV_new(sol,figureplot,Rseries,varargin)
             
             %this function calculates and plots the JV characthersitic from
             %the drift diffusion solution of runsolJV
             %Varargin{1} should be the Rshunt
             %Varargin{2} should be the name you want for the figure
+            
+            Rseries=Rseries;
+            
             if isempty(varargin)
                 Rshunt=1e15;
                 plot_name='undefined';
@@ -189,7 +192,8 @@ classdef dfplot
             if figureplot==1
                 hold on
                 Jtot = J.tot(:,end) + Vapp/Rshunt;
-                plot(Vapp, Jtot*1000,'DisplayName',plot_name);
+                Vapp= Vapp+Jtot*Rseries;
+                semilogy(Vapp, abs(Jtot*1000),'DisplayName',plot_name);
                 
                 ylim([-30, 10]);
                 %ylim([-30e-3, 10e-3]);
@@ -870,12 +874,13 @@ classdef dfplot
                 end
             end
         end
-        function [X,Y]=Electroluminescence_multi(DV,layernum,Voltage,Currentdensity,label,varargin)
+ function [X,Y]=Electroluminescence_multi(DV,layernum,Voltage,Currentdensity,label,Rseries,varargin)
             %set Voltage=0 and Currentdensity to the desired value to get
             %the el at fixed current,
             %or Currendensity=0 and voltage to the desired value
             %voltage in Volt and Currentdensity in mA/cm^2
             %Rshunt 
+            Rseries=Rseries;
             if isempty(varargin)
                 Rshunt=1e15;
             else
@@ -897,6 +902,7 @@ classdef dfplot
                     Current_density=J.tot(:,end)*1e3;
                     Vapp = dfana.calcVapp(sol);
                     Current_density=Current_density+Vapp/Rshunt*1e3;%include shunt
+                    Vapp = Vapp+Current_density*Rseries;
                     if Currentdensity==0
                     if max(Vapp>Voltage*0.9 & Vapp<Voltage*1.1)
                         CTsum=mean(trapz(x(x>XL & x<XR), CT(Vapp>Voltage*0.9 & Vapp<Voltage*1.1 ,x>XL & x<XR), 2));
@@ -905,11 +911,28 @@ classdef dfplot
                         disp("the JV did not run until the desired voltage")
                     end
                     else
-                        if max(Current_density>Currentdensity*0.9 & Current_density<Currentdensity*1.1)
-                            CTsum=mean(trapz(x(x>XL & x<XR), CT(Current_density>Currentdensity*0.9 & Current_density<Currentdensity*1.1,x>XL & x<XR), 2));
-                            Exsum=mean(trapz(x(x>XL & x<XR), Ex(Current_density>Currentdensity*0.9 & Current_density<Currentdensity*1.1,x>XL & x<XR), 2));
+                        if max(Current_density>Currentdensity )
+                            try
+                                CTsum=mean(trapz(x(x>XL & x<XR), CT(Current_density>Currentdensity*0.9 & Current_density<Currentdensity*1.1,x>XL & x<XR), 2));
+                                Exsum=mean(trapz(x(x>XL & x<XR), Ex(Current_density>Currentdensity*0.9 & Current_density<Currentdensity*1.1,x>XL & x<XR), 2));
+                                if isnan(CTsum)
+                                     error('could not find the right current density')
+                                end
+                            catch ME
+                                disp( ME.message+"\n using an interpolation method ")
+                                CTsum_h=mean(trapz(x(x>XL & x<XR), CT(find(Current_density>Currentdensity,1),x>XL & x<XR), 2));
+                                Exsum_h=mean(trapz(x(x>XL & x<XR), Ex(find(Current_density>Currentdensity,1),x>XL & x<XR), 2));
+                                CTsum_l=mean(trapz(x(x>XL & x<XR), CT(find(Current_density<Currentdensity,end),x>XL & x<XR), 2));
+                                Exsum_l=mean(trapz(x(x>XL & x<XR), Ex(find(Current_density<Currentdensity,end),x>XL & x<XR), 2));
+                                CTsum=(CTsum_h+CTsum_l)/2;
+                                Exsum=(Exsum_l+Exsum_h)/2;
+                            end
                         else
                             disp("the JV did not run until the desired current density")
+%                             disp("the actual current density "+num2str(Current_density(find(Current_density>Currentdensity,1))))
+%                              CTsum=mean(trapz(x(x>XL & x<XR), CT(find(Current_density>Currentdensity,1),x>XL & x<XR), 2));
+%                             Exsum=mean(trapz(x(x>XL & x<XR), Ex(find(Current_density>Currentdensity,1),x>XL & x<XR), 2));
+
                         end
                     end
                     
@@ -923,9 +946,10 @@ classdef dfplot
                 
                 xlabel('Energy [eV]')
                 ylabel('Electroluminescence Emission  [a.u]')
-                ylim([max(krE)*1e-1, max(krE)])
-                lg=legend;
-                lg.String{end}=label;
+                ylim([max(krE)*1e-9, max(krE)*10])
+                xlim([0.5,2])
+                %lg=legend;
+                %lg.String{end}=label;
                 X=DV.Prec.const.Edistribution;
                 Y=krE;
                 if Currentdensity==0
@@ -1101,8 +1125,9 @@ classdef dfplot
                 Y=krE;
                 xlabel('Energy [eV]')
                 ylabel('Photoluminescence Emission  [a.u]')
-                ylim([max(krE)*1e-1, max(krE)])
-
+                ylim([max(krE)*1e-9, max(krE)*10])
+                xlim([0.5,2])
+            
                 title(['Photoluminescence at under ' num2str(G) ' LI '])
                 Rec_Rate_rad=DV.Prec.params.Ex.results.krTot*Exsum+DV.Prec.params.CT.results.krTot*CTsum;
                 Rec_Rate_nrad=DV.Prec.params.Ex.results.knr*Exsum+DV.Prec.params.CT.results.knr*CTsum;
@@ -1111,8 +1136,8 @@ classdef dfplot
                 Prec.results.Qe=1/((1+(Prec.results.pe-1)*Prec.results.Qi)/Prec.results.pe/Prec.results.Qi);
                 Prec.results.Dvnr=Prec.const.kb*Prec.const.T*(log((1+(Prec.results.pe-1)*Prec.results.Qi)/Prec.results.pe/Prec.results.Qi));
                 DV.Prec=Prec;
-                                lg=legend;
-                lg.String{end}=label;
+                               % lg=legend;
+               % lg.String{end}=label;
                 disp(['non radiative voltage loss is ' num2str(Prec.results.Dvnr) ' V']);
             end
         end

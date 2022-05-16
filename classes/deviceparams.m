@@ -433,7 +433,9 @@ classdef deviceparams
                 DP.Layers{1}.N0V=NC;
                 DP.Layers{3}.N0V=NC;
                 DP.Layers{2}.r0=0; %R0 for field dependence is 1 nm
-
+                DP.Layers{2}.CTdesnity=Prec.params.CTdesnity*1e-6;
+                DP.Layers{3}.CTdesnity=Prec.params.CTdesnity*1e-6;
+                DP.Layers{1}.CTdesnity=Prec.params.CTdesnity*1e-6;
                 DP.Experiment_prop.discretetrap=0;
                 DP=UpdateLayers(DP);
                 DP = Xgrid(DP);
@@ -474,8 +476,8 @@ classdef deviceparams
             kk=activelayer;
             Dudt=[DP.Layers{kk}.kdis*(u(3))- DP.Layers{kk}.kfor*((u(1)*u(2)))+Ginj;
                 DP.Layers{kk}.kdis*(u(3))- DP.Layers{kk}.kfor*((u(1)*u(2)))+Ginj;
-                DP.Layers{kk}.kdisexc*(u(4))+DP.Layers{kk}.kfor*((u(1)*u(2)))-(DP.Layers{kk}.kdis*u(3)+DP.Layers{kk}.krec*(u(3)-DP.Layers{kk}.CT0))-DP.Layers{kk}.kforEx*(u(3));
-                Gen-DP.Layers{kk}.kdisexc*(u(4))-DP.Layers{kk}.krecexc*(u(4)-DP.Layers{kk}.Ex0)+DP.Layers{kk}.kforEx*(u(3));];%abs
+                DP.Layers{kk}.kdisexc*(u(4))*(1-u(3)/DP.Layers{kk}.CTdesnity)+DP.Layers{kk}.kfor*((u(1)*u(2)))-(DP.Layers{kk}.kdis*u(3)+DP.Layers{kk}.krec*(u(3)-DP.Layers{kk}.CT0))-DP.Layers{kk}.kforEx*(u(3));
+                Gen-DP.Layers{kk}.kdisexc*(u(4))*(1-u(3)/DP.Layers{kk}.CTdesnity)-DP.Layers{kk}.krecexc*(u(4)-DP.Layers{kk}.Ex0)+DP.Layers{kk}.kforEx*(u(3));];%abs
         end
         function [t,y]=solveKineticmodel(DP,Gen,Ginj)
             kk=2;
@@ -514,15 +516,15 @@ classdef deviceparams
             legend
 
         end
-                function [X,Y,Z]=simulate_EL(DP,Prec,fighandle)
-            [t,y]=solveKineticmodel(DP,0,1e25);
+                function [X,Y,Z]=simulate_EL(DP,Prec,fighandle,Ginj)
+            [t,y]=solveKineticmodel(DP,0,Ginj);
             CTsum=y(end,3);
             Exsum=y(end,4);
             krE=Prec.params.CT.results.krE*CTsum+Prec.params.Ex.results.krE*Exsum;
             %krE=Prec.params.CT.results.krE/(Prec.params.CT.results.knr+Prec.params.CT.results.krTot)*CTsum+Prec.params.Ex.results.krE/(Prec.params.Ex.results.knr+Prec.params.Ex.results.krTot)*Exsum;
             %krE=(Prec.params.CT.results.krE*CTsum*0+Prec.params.Ex.results.krE*Exsum)./(Prec.params.CT.results.knr*CTsum+Prec.params.Ex.results.knr*Exsum);
             figure(fighandle)
-            subplot(2,4,5)
+             subplot(3,4,5)
             semilogy(Prec.const.Edistribution,krE)
             hold on
 
@@ -542,8 +544,8 @@ classdef deviceparams
 
             
         end
-        function [X,Y,Z]=simulate_EL_normalized(DP,Prec,fighandle)
-            [t,y]=solveKineticmodel(DP,0,1e25);
+        function [X,Y,Z]=simulate_EL_normalized(DP,Prec,fighandle,Ginj)
+            [t,y]=solveKineticmodel(DP,0,Ginj);
             CTsum=y(end,3);
             Exsum=y(end,4);
             krE=Prec.params.CT.results.krE*CTsum+Prec.params.Ex.results.krE*Exsum;
@@ -551,7 +553,7 @@ classdef deviceparams
             %krE=(Prec.params.CT.results.krE*CTsum*0+Prec.params.Ex.results.krE*Exsum)./(Prec.params.CT.results.knr*CTsum+Prec.params.Ex.results.knr*Exsum);
             
             figure(fighandle)
-            subplot(2,4,6)
+             subplot(3,4,6)
             semilogy(Prec.const.Edistribution,krE/max(krE))
             hold on
 
@@ -784,12 +786,12 @@ classdef deviceparams
                         legend()
 
         end
-        function [X,Y,Z]=simulate_PL(DP,Prec,fighandle)
-            [t,y]=solveKineticmodel(DP,1e25,0);
+        function [X,Y,Z]=simulate_PL(DP,Prec,fighandle,Gex)
+            [t,y]=solveKineticmodel(DP,Gex,0);
             CTsum=y(end,3);
             Exsum=y(end,4);
             figure(fighandle)
-            subplot(2,4,7)
+             subplot(3,4,7)
             krE=Prec.params.CT.results.krE*CTsum+Prec.params.Ex.results.krE*Exsum;
             %krE=Prec.params.CT.results.krE/(Prec.params.CT.results.knr+Prec.params.CT.results.krTot)*CTsum+Prec.params.Ex.results.krE/(Prec.params.Ex.results.knr+Prec.params.Ex.results.krTot)*Exsum;
             semilogy(Prec.const.Edistribution,krE)
@@ -808,12 +810,12 @@ classdef deviceparams
 %            legend("Exp","ToT","From CT","FromEx")
             
         end
-        function [X,Y,Z]=simulate_PL_normalized(DP,Prec,fighandle)
-            [t,y]=solveKineticmodel(DP,1e25,0);
+        function [X,Y,Z]=simulate_PL_normalized(DP,Prec,fighandle,Gex)
+            [t,y]=solveKineticmodel(DP,Gex,0);
             CTsum=y(end,3);
             Exsum=y(end,4);
             figure(fighandle)
-            subplot(2,4,8)
+            subplot(3,4,8)
             krE=Prec.params.CT.results.krE*CTsum+Prec.params.Ex.results.krE*Exsum;
             %krE=Prec.params.CT.results.krE/(Prec.params.CT.results.knr+Prec.params.CT.results.krTot)*CTsum+Prec.params.Ex.results.krE/(Prec.params.Ex.results.knr+Prec.params.Ex.results.krTot)*Exsum;  
             semilogy(Prec.const.Edistribution,krE/max(krE))

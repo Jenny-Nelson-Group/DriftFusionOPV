@@ -90,7 +90,7 @@ classdef device
                         %%%%%%%%%%%%%%%%%%%Do JV%%%%%%%%%%%%%%
                         p.solveropt.AbsTol=1e-6;
                         p.solveropt.RelTol=1e-3;
-                        p.Time_properties.tmax=1e-1;
+                        p.Time_properties.tmax=1e-1; %contol the sweep speed
                         p.Experiment_prop.V_fun_type = 'sweep';
                         p.Experiment_prop.V_fun_arg(1) = Vstart;
                         p.Experiment_prop.V_fun_arg(2) = Vend;
