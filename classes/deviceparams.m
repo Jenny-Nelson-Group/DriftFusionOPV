@@ -359,8 +359,8 @@ classdef deviceparams
             kbT=DP.physical_const.kB*DP.physical_const.T;%in eV
             q=DP.physical_const.e;
             offset=Prec.params.Ex.DG0-Prec.params.CT.DG0;
-            krecex=Prec.params.Ex.results.knr;
-            krecCT=Prec.params.CT.results.knr;
+            krecex=Prec.params.Ex.results.knr+Prec.params.Ex.results.krTot;
+            krecCT=Prec.params.CT.results.knr+Prec.params.CT.results.krTot;
             RCTE=Prec.params.RCTE;
             CT0=Prec.results.R0rad/q/1e3/(Prec.params.CT.results.krTot+Prec.params.Ex.results.krTot*exp(-offset/kbT)/RCTE);
 
@@ -470,21 +470,21 @@ classdef deviceparams
             DP.light_properties.Gensprofile_pos=Xpos*1e-7+DP.Layers{activelayer}.XL;
             DP.light_properties.Gensprofile_signal=Gx;
         end
-        function Dudt=kineticmodel(DP,activelayer,u,Gen,Ginj)
+        function Dudt=kineticmodel(DP,activelayer,u,Gen_ex,Gen_CT,Ginj)
             kk=activelayer;
             Dudt=[DP.Layers{kk}.kdis*(u(3))- DP.Layers{kk}.kfor*((u(1)*u(2)))+Ginj;
                 DP.Layers{kk}.kdis*(u(3))- DP.Layers{kk}.kfor*((u(1)*u(2)))+Ginj;
-                DP.Layers{kk}.kdisexc*(u(4))+DP.Layers{kk}.kfor*((u(1)*u(2)))-(DP.Layers{kk}.kdis*u(3)+DP.Layers{kk}.krec*(u(3)-DP.Layers{kk}.CT0))-DP.Layers{kk}.kforEx*(u(3));
-                Gen-DP.Layers{kk}.kdisexc*(u(4))-DP.Layers{kk}.krecexc*(u(4)-DP.Layers{kk}.Ex0)+DP.Layers{kk}.kforEx*(u(3));];%abs
+                Gen_CT+DP.Layers{kk}.kdisexc*(u(4))+DP.Layers{kk}.kfor*((u(1)*u(2)))-(DP.Layers{kk}.kdis*u(3)+DP.Layers{kk}.krec*(u(3)-DP.Layers{kk}.CT0))-DP.Layers{kk}.kforEx*(u(3));
+                Gen_ex-DP.Layers{kk}.kdisexc*(u(4))-DP.Layers{kk}.krecexc*(u(4)-DP.Layers{kk}.Ex0)+DP.Layers{kk}.kforEx*(u(3));];%abs
         end
-        function [t,y]=solveKineticmodel(DP,Gen,Ginj)
+        function [t,y]=solveKineticmodel(DP,Gen_ex,Gen_CT,Ginj)
             kk=2;
             tspan = [0 5];
             u0 = [DP.Layers{kk}.ni,DP.Layers{kk}.ni,DP.Layers{kk}.CT0,DP.Layers{kk}.Ex0];
-            [t,y] = ode15s(@(t,u) kineticmodel(DP,kk,u,Gen,Ginj), tspan, u0);
-%             y(end,4)/y(end,3);
-% %             figure
-% %             loglog(t,y,'-o')
+%             Gen_ex=Gen;
+%             Gen_CT=0;
+            [t,y] = ode15s(@(t,u) kineticmodel(DP,kk,u,Gen_ex,Gen_CT,Ginj), tspan, u0);
+
         end
         function [X,Y]=simulateTAS(DP,G,Gpulse,fighandle)
             kk=2;
