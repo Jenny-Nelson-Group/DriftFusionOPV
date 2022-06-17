@@ -69,7 +69,7 @@ clear EL_maxint PL_maxint
 close all
 kk=0;
 variablelist=[1,5,10,50,100];
-for Rseries=variablelist
+for Var_name=variablelist
     DP.External_prop.Rseries=0;
     DP.Experiment_prop.BC =3;
     sn=1e5;
@@ -80,7 +80,7 @@ for Rseries=variablelist
     tic
     NC=2e19;activelayer=2;Kfor=1e-11;%V in V, K in S-1, NC in Cm-3, Jsc in mA cm-2,
     mobility=3e-4;kdis=1.3e10;kdisex=1e11;% Tq1 in s,mobility in Cm2V-1s-1
-    DP=DP.generateDeviceparams(NC,activelayer,mobility/Rseries,kdis,kdisex,Prec,1e-11,0);
+    DP=DP.generateDeviceparams(NC,activelayer,mobility/Var_name,kdis,kdisex,Prec,1e-11,0);
 
     DV2=device(DP,DV_infinite.sol_eq);
     DV2.Prec=Prec;
@@ -95,7 +95,7 @@ for Rseries=variablelist
     DV2=device.runsolJV(DV2,G,Vstart,Vend);
     toc
 
-    assignin('base',"DV_MT"+num2str(Rseries),DV2)
+    assignin('base',"DV_MT"+num2str(Var_name),DV2)
     
     %%
     kk=kk+1;
@@ -107,15 +107,15 @@ ax.YScale='log';
 ax.YLim=[0,1e-1];
 hold on
 lg=legend();
-lg.String{end}=num2str(Rseries);%num2str(log(Rseries)/log(10));
+lg.String{end}=num2str(Var_name);%num2str(log(Rseries)/log(10));
 subplot(2,2,2)
-[~,ELplot]=dfplot.Electroluminescence_multi(DV2,2,0,0.1,num2str(Rseries));
+[~,ELplot]=dfplot.Electroluminescence_multi(DV2,2,0,0.1,num2str(Var_name));
 EL_maxint(kk)=max(ELplot);
 hold on 
 xlim([0.9,1.6])
 
 subplot(2,2,3)
-[~,PLplot,~]=dfplot.photoluminescence_mult(DV2,2,1,1e-6,num2str(Rseries));
+[~,PLplot,~]=dfplot.photoluminescence_mult(DV2,2,1,1e-6,num2str(Var_name));
 xlim([0.9,1.6])
 PL_maxint(kk)=max(PLplot);
 hold on 
@@ -135,9 +135,9 @@ kk=0;
 clear EL_maxint PL_maxint
 variablelist=[1,100,500,1000];
 
-for Rseries=variablelist
+for Var_name=variablelist
     kk=kk+1;
-    eval("DV2=DV_R"+num2str(Rseries));
+    eval("DV2=DV_R"+num2str(Var_name));
    figure(2)
     subplot(2,2,1)
 dfplot.JV_new(DV2.sol_JV(1),1)
@@ -147,18 +147,18 @@ ax.YLim=[1e-7,1e-1];
 ax.XLim=[0,2];
 hold on
 lg=legend();
-lg.String{end}=num2str(Rseries);%num2str(log(Rseries)/log(10));
+lg.String{end}=num2str(Var_name);%num2str(log(Rseries)/log(10));
 lg.Title.String='series resitance ohm cm-2';
 title('dark JV')
 subplot(2,2,2)
-[~,ELplot]=dfplot.Electroluminescence_multi(DV2,2,0,0.1,num2str(Rseries));
+[~,ELplot]=dfplot.Electroluminescence_multi(DV2,2,0,0.1,num2str(Var_name));
 EL_maxint(kk)=max(ELplot);
 hold on 
 xlim([0.9,2])
 lg=legend;
 lg.Title.String='series resitance ';
 subplot(2,2,3)
-[~,PLplot,~]=dfplot.photoluminescence_mult(DV2,2,0.5,1e-6,num2str(Rseries));
+[~,PLplot,~]=dfplot.photoluminescence_mult(DV2,2,0.5,1e-6,num2str(Var_name));
 xlim([0.9,2])
 PL_maxint(kk)=max(PLplot);
 hold on 
@@ -181,30 +181,30 @@ kk=0;
 clear EL_maxint PL_maxint
 variablelist=[100,500,1000,5000,10000];
 eval("DV2=DV_1;");
-for Rseries=variablelist
+for Var_name=variablelist
     kk=kk+1;
 %     eval("DV2=DV_R"+num2str(Rseries));
    figure(2)
     subplot(2,2,1)
-dfplot.JV_new(DV2.sol_JV(1),1,Rseries)
+dfplot.JV_new(DV2.sol_JV(1),1,Var_name)
 ax=gca;
 ax.YScale='log';
 ax.YLim=[1e-7,1e-1];
 ax.XLim=[0,2];
 hold on
 lg=legend();
-lg.String{end}=num2str(Rseries);%num2str(log(Rseries)/log(10));
+lg.String{end}=num2str(Var_name);%num2str(log(Rseries)/log(10));
 lg.Title.String='shunt resitance ohm cm-2';
 title('dark JV')
 subplot(2,2,2)
-[~,ELplot]=dfplot.Electroluminescence_multi(DV2,2,0,2,num2str(Rseries),Rseries);
+[~,ELplot]=dfplot.Electroluminescence_multi(DV2,2,0,2,num2str(Var_name),Var_name);
 EL_maxint(kk)=max(ELplot);
 hold on 
 xlim([0.9,2])
 lg=legend;
 lg.Title.String='shunt resitance ';
 subplot(2,2,3)
-[~,PLplot,~]=dfplot.photoluminescence_mult(DV2,2,0.5,1e-6,num2str(Rseries));
+[~,PLplot,~]=dfplot.photoluminescence_mult(DV2,2,0.5,1e-6,num2str(Var_name));
 xlim([0.9,2])
 PL_maxint(kk)=max(PLplot);
 hold on 
@@ -226,11 +226,10 @@ end
 kk=0;
 clear EL_maxint PL_maxint EL_maxint_05 EL_maxint_1 EL_maxint_2
 variablelist=[1,5,10,50,100];
-eval("DV2=DV_1;");
  
-for Rseries=variablelist
+for Var_name=variablelist
     kk=kk+1;
-    eval("DV2=DV_M"+num2str(Rseries));
+    eval("DV2=DV_MT"+num2str(Var_name));
   figure(2)
     subplot(2,2,1)
 dfplot.JV_new(DV2.sol_JV(1),1)
@@ -240,11 +239,11 @@ ax.YLim=[1e-7,1e-1];
 ax.XLim=[0,2];
 hold on
 lg=legend();
-lg.String{end}=num2str(mobility/Rseries,'%1.0e');%num2str(log(Rseries)/log(10));
+lg.String{end}=num2str(mobility/Var_name,'%1.0e');%num2str(log(Rseries)/log(10));
 lg.Title.String='mobility  ohm cm2 V-1 s-1';
 title('dark JV')
 subplot(2,2,2)
-[~,ELplot]=dfplot.Electroluminescence_multi(DV2,2,0,2,num2str(mobility/Rseries,'%1.0e'));
+[~,ELplot]=dfplot.Electroluminescence_multi(DV2,2,0,2,num2str(mobility/Var_name,'%1.0e'));
 EL_maxint_2(kk)=max(ELplot);
 hold on 
 
@@ -252,7 +251,7 @@ xlim([0.9,2])
 lg=legend;
 lg.Title.String='mobility ';
 subplot(2,2,3)
-[~,PLplot,~]=dfplot.photoluminescence_mult(DV2,2,0.5,1e-6,num2str(mobility/Rseries,'%1.0e'));
+[~,PLplot,~]=dfplot.photoluminescence_mult(DV2,2,0,1e-6,num2str(mobility/Var_name,'%1.0e'));
 xlim([0.9,2])
 PL_maxint(kk)=max(PLplot);
 hold on 
@@ -265,9 +264,9 @@ plot(mobility./variablelist(1:kk),EL_maxint_2/max(EL_maxint_2),'o-')
 hold off
 ylim([0,1.1])
 figure(3)
-[~,ELplot]=dfplot.Electroluminescence_multi(DV2,2,0,1,num2str(mobility/Rseries,'%1.0e'));
+[~,ELplot]=dfplot.Electroluminescence_multi(DV2,2,0,1,num2str(mobility/Var_name,'%1.0e'));
 EL_maxint_1(kk)=max(ELplot);
-[~,ELplot]=dfplot.Electroluminescence_multi(DV2,2,0,0.5,num2str(mobility/Rseries,'%1.0e'));
+[~,ELplot]=dfplot.Electroluminescence_multi(DV2,2,0,0.5,num2str(mobility/Var_name,'%1.0e'));
 EL_maxint_05(kk)=max(ELplot);
 % [~,ELplot]=dfplot.Electroluminescence_multi(DV2,2,0,5,num2str(mobility/Rseries,'%1.0e'));
 % EL_maxint_5(kk)=max(ELplot);
