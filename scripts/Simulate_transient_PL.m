@@ -8,10 +8,10 @@ Prec.params.CT.DG0          = Prec.params.Ex.DG0 - offset; % energy of the CT st
 Prec.params.Ex.f            = 2.56; % [1e-1, 10]%controls the strength of the optical transition from the Ex to ground
 Prec.params.CT.f            = 2e-2;%[1e-4, 1e-1] %controls the strength of the optical transition from the CT to ground
 
-Prec.params.Ex.L0           = 0.06;  %[0.5,0.2] % low frequency reorganisation energy % strongly affects the spectral width of the emission 
-Prec.params.Ex.Li           = 0.045; %[0.5,0.2] % high frequency reorganisation energy % strongly affects the ratio between the vibronic peak emission
-Prec.params.CT.L0           = 0.05;  %[0.5,0.2]
-Prec.params.CT.Li           = 0.04;   %[0.5,0.2]
+Prec.params.Ex.L0           = 0.06;  %[0.05,0.2] % low frequency reorganisation energy % strongly affects the spectral width of the emission 
+Prec.params.Ex.Li           = 0.045; %[0.05,0.2] % high frequency reorganisation energy % strongly affects the ratio between the vibronic peak emission
+Prec.params.CT.L0           = 0.05;  %[0.05,0.2]
+Prec.params.CT.Li           = 0.04;   %[0.05,0.2]
 Prec.params.RCTE            = 1e-2; % [1e-2,10] % ratio of CT to Exiton density of state
 
 
@@ -24,9 +24,9 @@ for Grate=5e25
 
 activelayer = 2;        % Active Layer Index                % integer ( no need to change) 
 %NC          = 2e19;     % Number of Charge Carriers         % cm^-3
-Kfor        = 1e-10;   %[1e-8,1e-12] % Rate Constant CS to CT            % cm^3 / s
+Kfor        = 1e-11;   %[1e-8,1e-12] % Rate Constant CS to CT            % cm^3 / s
 kdis        = 1e9;     %[1e9,1e12] % Rate Constant CT dissociation     % 1 / s
-kdisex      = 1e11;     %[1e9,1e12] % Rate Constatn Ex dissociation     % 1 / s
+kdisex      = 1e9;     %[1e9,1e12] % Rate Constatn Ex dissociation     % 1 / s
 %mobility    = 5e-4;     % Charge Carrier Mobility           % cm^2 / V / s
 %Generate the deviceparams class
 deviceParameterFile = 'DeviceParameters_Default.xlsx';
@@ -38,11 +38,11 @@ DP = deviceparams(['parameters\',deviceParameterFile]);
 Background_Ex_Gen_rate=1e10; %1sun would be around 1e22 % in cm-3 s-1
 %laser pulse properties
 Laser_Ex_gen_rate_gauss=Grate; % in cm-3 s-1
-Laser_Ex_gen_rate_exp=Grate*1e-2; % in cm-3 s-1
+Laser_Ex_gen_rate_exp=Grate*1e-6; % in cm-3 s-1
 
 laser_peak= 2.5; % in ns
 gaussianwidth=5;% in ns width of the gaussian
-exponentialdecay=1e-7;%decay of the exponential component of the laser pulse in s
+exponentialdecay=1e-9;%decay of the exponential component of the laser pulse in s
 
 exp_length= 5001; % in ns
 Temperature=300;%[30,350] % in Kelvin 
