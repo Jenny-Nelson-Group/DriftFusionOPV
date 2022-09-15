@@ -156,17 +156,22 @@ solstruct.params = params;  solstruct.tspan=params.Time_properties.tmesh ;solstr
                 0;];
             
         end
-        if isfield(params.Layers{kk},'r0')
-            r0=params.Layers{kk}.r0;%start with r0=3nm
+        if isfield(params.Layers{kk},'r0_Ex')
+            r0_Ex=params.Layers{kk}.r0_Ex;%start with r0=3nm
         else
-            r0=0;
+            r0_Ex=0;
+        end
+        if isfield(params.Layers{kk},'r0_CT')
+            r0_CT=params.Layers{kk}.r0_CT;%start with r0=3nm
+        else
+            r0_CT=0;
         end
         
-        s = [params.Layers{kk}.kdis*(u(3))*exp(q*DuDx(4)*r0/(kB*T))- params.Layers{kk}.kfor*((u(1)*u(2)));%try to add field dependence in the form kdis=kdis0*exp(q*dudx(4)*r0/(kB*T)); 
-            params.Layers{kk}.kdis*(u(3))*exp(q*DuDx(4)*r0/(kB*T))- params.Layers{kk}.kfor*((u(1)*u(2)));%start with r0=3nm
-            params.Layers{kk}.kdisexc*(u(5))+params.Layers{kk}.kfor*((u(1)*u(2)))-(params.Layers{kk}.kdis*u(3)*exp(q*DuDx(4)*r0/(kB*T))+params.Layers{kk}.krec*(u(3)-params.Layers{kk}.CT0))-params.Layers{kk}.kforEx*(u(3));
+        s = [params.Layers{kk}.kdis*(u(3))*exp(q*DuDx(4)*r0_CT/(kB*T))- params.Layers{kk}.kfor*((u(1)*u(2)));%try to add field dependence in the form kdis=kdis0*exp(q*dudx(4)*r0/(kB*T)); 
+            params.Layers{kk}.kdis*(u(3))*exp(q*DuDx(4)*r0_CT/(kB*T))- params.Layers{kk}.kfor*((u(1)*u(2)));%start with r0=3nm
+            params.Layers{kk}.kdisexc*(u(5))*exp(q*DuDx(4)*r0_Ex/(kB*T))+params.Layers{kk}.kfor*((u(1)*u(2)))-(params.Layers{kk}.kdis*u(3)*exp(q*DuDx(4)*r0/(kB*T))+params.Layers{kk}.krec*(u(3)-params.Layers{kk}.CT0))-params.Layers{kk}.kforEx*(u(3));
             (q/params.Layers{kk}.epp)*(-u(1)+u(2)-params.Layers{kk}.NA+params.Layers{kk}.ND);
-            g-params.Layers{kk}.kdisexc*(u(5))-params.Layers{kk}.krecexc*(u(5)-params.Layers{kk}.Ex0)+params.Layers{kk}.kforEx*(u(3));];%abs
+            g-params.Layers{kk}.kdisexc*(u(5))*exp(q*DuDx(4)*r0_Ex/(kB*T))-params.Layers{kk}.krecexc*(u(5)-params.Layers{kk}.Ex0)+params.Layers{kk}.kforEx*(u(3));];%abs
 %         if x>1.5e-5
 %             pause(0.1)
 %         end 
