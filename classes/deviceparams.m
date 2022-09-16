@@ -498,13 +498,13 @@ classdef deviceparams
             kk=2;
             tspan = [0 1e-1];
             u0 = [DP.Layers{kk}.ni,DP.Layers{kk}.ni,DP.Layers{kk}.CT0,DP.Layers{kk}.Ex0];            
-            [t,yeq] = ode15s(@(t,u) kineticmodel(DP,kk,u,G,0), tspan, u0);
+            [t,yeq] = ode15s(@(t,u) kineticmodel(DP,kk,u,G,0,0), tspan, u0);
             tspan = [0 0.2e-12];
             u0 = yeq(end,:);
-            [t,y] = ode15s(@(t,u) kineticmodel(DP,kk,u,G+Gpulse,0), tspan, u0);
+            [t,y] = ode15s(@(t,u) kineticmodel(DP,kk,u,G+Gpulse,0,0), tspan, u0);
             tspan = [0 10E-9];
             u0 = y(end,:);
-            [t,y] = ode15s(@(t,u) kineticmodel(DP,kk,u,G,0), tspan, u0);
+            [t,y] = ode15s(@(t,u) kineticmodel(DP,kk,u,G,0,0), tspan, u0);
             figure(fighandle)
             subplot(2,2,4)
 %             semilogx(t*1e12,(y-yeq(end,:))./max(y-yeq(end,:)),'-o')
@@ -523,7 +523,7 @@ classdef deviceparams
 
         end
         function [X,Y,Z]=simulate_EL(DP,Prec,fighandle)
-            [t,y]=solveKineticmodel(DP,0,1e25);
+            [t,y]=solveKineticmodel(DP,0,0,1e25);
             CTsum=y(end,3);
             Exsum=y(end,4);
             
@@ -892,7 +892,7 @@ classdef deviceparams
 
         end
         function [X,Y,Z]=simulate_PL(DP,Prec,fighandle)
-            [t,y]=solveKineticmodel(DP,1e25,0);
+            [t,y]=solveKineticmodel(DP,1e25,0,0);
             CTsum=y(end,3);
             Exsum=y(end,4);
             figure(fighandle)
