@@ -74,8 +74,26 @@ DP=DP.generateDeviceparams(NC,activelayer,mobility,kdis,kdisex,Prec,kfor,0);
     assignin('base',"DV_D4A2_nofield"+num2str(counter),DV2)
     %%
     figure(2)
-    dfplot.JV_new(DV2.sol_JV(1),1);
-    dfplot.JV_new(DV2.sol_JV(2),1);
+    dfplot.JV_new(DV2.sol_JV(9),1);
+    dfplot.JV_new(DV2.sol_JV(10),1);
+    
+    %%
+    figure(3)
+      counter=0;
+    for Gen=suns
+        counter=counter+1;
+        [tableres.Jsc(counter),tableres.Voc(counter),tableres.FF(counter)]=dfplot.JV_new(DV2.sol_JV(2*(counter-1)+1),1);
+    end
+    tableres.Jsc=tableres.Jsc';
+    tableres.Voc=tableres.Voc';
+    tableres.FF=tableres.FF';
+    tableres.suns=suns';
+    tableres=struct2table(tableres);
+    %%
+    figure(4)
+    loglog(tableres.suns,tableres.suns*max(tableres.Jsc))
+    hold on
+    loglog(tableres.suns,tableres.Jsc,'*')
     %%
     [Jsc,Voc,FF]=dfplot.JV_new(DV2.sol_JV(2),1);
     figure(3)
