@@ -189,10 +189,12 @@ classdef dfplot
             if figureplot==1
                 hold on
                 Jtot = J.tot(:,end) + Vapp/Rshunt;
-                plot(Vapp, Jtot*1000,'DisplayName',plot_name);
                 
-                ylim([-30, 10]);
-                %ylim([-30e-3, 10e-3]);
+                plot(Vapp, Jtot,'DisplayName',plot_name);
+                ylim([-0.030, 0.010]);
+                %plot(Vapp, Jtot*1e3,'DisplayName',plot_name);
+                %ylim([-30, 10]);      
+                
                 xlabel('Applied voltage [V]')
                 ylabel('Current density [mA/cm^2]');
                 hold off

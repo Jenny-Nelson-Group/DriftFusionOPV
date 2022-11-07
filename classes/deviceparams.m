@@ -734,17 +734,19 @@ classdef deviceparams
             figure(fighandle)
             subplot(2,2,2)
             krE=Prec.params.CT.results.krE*CTsum+Prec.params.Ex.results.krE*Exsum;
-            
-            semilogy(Prec.const.Edistribution,krE/max(krE),'DisplayName',"Total contribution",'Color',[1,0,0],'LineWidth',2)
+            norm_PL = max(krE);
+            %norm_PL = 1;
+            semilogy(Prec.const.Edistribution,krE/norm_PL,'DisplayName',"Total contribution",'Color',[1,0,0],'LineWidth',2)
             hold on
-            semilogy(Prec.const.Edistribution,Prec.params.CT.results.krE*CTsum/max(krE),'--','DisplayName',"CT contribution",'Color',[1, 0.66, 0.59])
-            semilogy(Prec.const.Edistribution,Prec.params.Ex.results.krE*Exsum/max(krE),'DisplayName',"Ex contribution",'Color',[1, 0.66, 0.59])
+            semilogy(Prec.const.Edistribution,Prec.params.CT.results.krE*CTsum/norm_PL,'--','DisplayName',"CT contribution",'Color',[1, 0.66, 0.59])
+            semilogy(Prec.const.Edistribution,Prec.params.Ex.results.krE*Exsum/norm_PL,'DisplayName',"Ex contribution",'Color',[1, 0.66, 0.59])
             X=(Prec.const.Edistribution)';
-            Y=(krE/max(krE))';
-            Z=(Prec.params.CT.results.krE*CTsum/max(krE))';
+            Y=(krE/norm_PL)';
+            Z=(Prec.params.CT.results.krE*CTsum/norm_PL)';
             xlabel('Energy [eV]')
             ylabel('PL Emission  [a.u]')
             ylim([1*1e-4, 1])
+            %ylim('auto')
             xlim([0.5,2])
             legend
             
