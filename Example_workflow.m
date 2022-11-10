@@ -11,7 +11,7 @@ addpath(genpath(pwd)); % add folders to path
 
 %%
 Prec                        = paramsRec;                    % initiliase the recombination parameters (default values)
-offset                      = 0.25;                  % eV    % energy difference between the excited state and the CT state
+offset                      = 0.23;                  % eV    % energy difference between the excited state and the CT state
 Prec.params.tickness        = 100 * 1e-9;           % m     % thickness of the active layer
 Prec.params.Ex.DG0          = 1.35;                 
 Prec.params.CT.DG0          = Prec.params.Ex.DG0 - offset;
@@ -40,10 +40,11 @@ Voc     = Prec.results.Vocrad - Prec.results.Dvnr;
 
 activelayer = 2;        % Active Layer Index                % integer
 NC          = 2e19;     % Number of Charge Carriers         % cm^-3
-Kfor        = 2e-10;    % Rate Constant CS to CT            % cm^3 / s
-kdis        = 1e8;      % Rate Constant CT dissociation     % 1 / s
+Kfor        = 1e-10;    % Rate Constant CS to CT            % cm^3 / s
+kdis        = 1.5e8;      % Rate Constant CT dissociation     % 1 / s
 kdisex      = 1e10;      % Rate Constatn Ex dissociation     % 1 / s
-mobility    = 2e-4;     % Charge Carrier Mobility           % cm^2 / V / s
+mobility    = 6e-5;     % Charge Carrier Mobility           % cm^2 / V / s
+Rshunt      = 1e15;
 
 % deviceParameterFile = uigetfile('parameters\DeviceParameters_Default.xlsx');
 % if isequal(deviceParameterFile,0)
@@ -55,6 +56,8 @@ DP = deviceparams(['parameters\',deviceParameterFile]);
 DP.light_properties.OM      = 0; %to consider the transfer matrix generation profile
 DP.Time_properties.tpoints  = 100;
 DP.Layers{activelayer}.tp   = Prec.params.tickness * 100; % [cm] = [m] * 100
+DP.Layers{2}.r0_CT= 3e-7;
+DP.Layers{2}.r0_Ex = 3e-7;
 
 DP = DP.generateDeviceparams(NC, activelayer, mobility, kdis, kdisex, Prec, Kfor, 0);
 clear NC activelayer Tq1exp mobility kdis kdisex
@@ -63,11 +66,10 @@ clear NC activelayer Tq1exp mobility kdis kdisex
 
 % kforr=DP.Layers{2}.kfor;
 fignumber = 1;
-DP.simulate_PL(Prec,fignumber);
+%DP.simulate_PL(Prec,fignumber);
 DP.simulate_EL(Prec,fignumber);
 %DP.simulateTAS(2e10,1e27,fignumber);
-DP.Layers{2}.r0_CT= 0;
-DP.Layers{2}.r0_Ex = 4e-7;
+
 
 % plot EQE from Prec
 figure(fignumber)
@@ -109,7 +111,7 @@ pause(0.1) %give the figure time to finish
     subplot(2,2,4)
     %dfplot.JV_new(DV2.sol_JV(2),1)
     hold on
-    [Jsc,Voc,FF,JJ,VV] = dfplot.JV_new(DV2.sol_JV(end),1);
+    [Jsc,Voc,FF,JJ,VV] = dfplot.JV_new(DV2.sol_JV(end),1,Rshunt);
     %title("Jsc ="+Jsc+", FF = "+FF+", Voc = "+Voc)
     hold on
     %plot([0,1],[0,0]);
@@ -119,3 +121,5 @@ pause(0.1) %give the figure time to finish
     subplot(2,2,2)
     hold on
     dfplot.photoluminescence(DV2,2,0,1)
+    xlim([800,1400]);
+    ylim([1e-1,1e3]);

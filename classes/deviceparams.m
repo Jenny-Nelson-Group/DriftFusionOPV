@@ -515,7 +515,7 @@ classdef deviceparams
 
         end
         function [X,Y,Z]=simulate_EL(DP,Prec,fighandle)
-            [t,y]=solveKineticmodel(DP,0,1e25);
+            [t,y]=solveKineticmodel(DP,0,0,1e25);
             CTsum=y(end,3);
             Exsum=y(end,4);
             
@@ -884,7 +884,7 @@ classdef deviceparams
 
         end
         function [X,Y,Z]=simulate_PL(DP,Prec,fighandle)
-            [t,y]=solveKineticmodel(DP,1e25,0);
+            [t,y]=solveKineticmodel(DP,1e25,0,0);
             CTsum=y(end,3);
             Exsum=y(end,4);
             figure(fighandle)

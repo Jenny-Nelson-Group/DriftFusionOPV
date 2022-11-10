@@ -1051,13 +1051,15 @@ classdef dfplot
                 disp("the dark JV does not exist")
             else
                 krE=DV.Prec.params.CT.results.krE*CTsum+DV.Prec.params.Ex.results.krE*Exsum;
-                norm_PL = max(krE);
-                %norm_PL = 1;
+                %norm_PL = max(krE);
+                norm_PL = 1e15;
                 tableres(end+1)=max(krE);
-                semilogy(DV.Prec.const.Edistribution,krE/norm_PL)
+                %xxx = DV.Prec.const.Edistribution;
+                xxx = 1240./DV.Prec.const.Edistribution;
+                semilogy(xxx,krE/norm_PL)
                 hold on
-                semilogy(DV.Prec.const.Edistribution,DV.Prec.params.CT.results.krE*CTsum/norm_PL)
-                semilogy(DV.Prec.const.Edistribution,DV.Prec.params.Ex.results.krE*Exsum/norm_PL)
+                semilogy(xxx,DV.Prec.params.CT.results.krE*CTsum/norm_PL)
+                semilogy(xxx,DV.Prec.params.Ex.results.krE*Exsum/norm_PL)
                 X=DV.Prec.const.Edistribution;
                 Y=krE/max(krE);
                 xlabel('Energy [eV]')
