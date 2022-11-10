@@ -1100,9 +1100,9 @@ classdef dfplot
                         CurrInjected=0;
                         tableres=[CurrInjected,G,Voltageapp];
                         
-                    elseif max(Vapp>Voltage*0.99 & Vapp<Voltage*1.01)
-                        CTsum=mean(trapz(x(x>XL & x<XR), CT(Vapp>Voltage*0.99 & Vapp<Voltage*1.01 ,x>XL & x<XR), 2));
-                        Exsum=mean(trapz(x(x>XL & x<XR), Ex(Vapp>Voltage*0.99 & Vapp<Voltage*1.01 ,x>XL & x<XR), 2));
+                    elseif max(Vapp>Voltage-0.05 & Vapp<Voltage+0.05)
+                        CTsum=mean(trapz(x(x>XL & x<XR), CT(Vapp>Voltage-0.05 & Vapp<Voltage+0.05,x>XL & x<XR), 2));
+                        Exsum=mean(trapz(x(x>XL & x<XR), Ex(Vapp>Voltage-0.05 & Vapp<Voltage+0.05 ,x>XL & x<XR), 2));
                         CurrInjected=mean(J.tot(Vapp>Voltage*0.99 & Vapp<Voltage*1.01,end))*1e3;
                         tableres=[CurrInjected,G,Voltage];
                         Voltageapp=Voltage;

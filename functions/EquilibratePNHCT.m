@@ -52,14 +52,9 @@ p.Experiment_prop.mobset=1;
 p.Time_properties.tmax = 1e-6;
 p.Time_properties.t0 = p.Time_properties.tmax/1e3;
 sol_eq = pndriftHCT(sol, p);
-
 p=UpdateLayers(p);
-
 sol_eq = pndriftHCT(sol_eq, p);
-
-
 y=sol_eq;
-
 toc
 
 end
