@@ -38,7 +38,7 @@ classdef paramsRec
             params.Ex.hW=0.15;%main vibronic energy considered in eV
             params.Ex.sigma=0.001;%gaussian distribution for CT state
             params.Ex.Dmus=3*3.33e-30/1.6e-19;%difference in static dipole moment (10 in DEbye ) then th
-            params.Ex.numbrestate=1;
+            params.Ex.numbrestate=2;
             %% CT properties
             params.CT.f=0.001;%oscillator strength of the CT state
             params.CT.L0=0.14;%outer reorganisation energy(low frequency) in eV
@@ -49,7 +49,7 @@ classdef paramsRec
             params.CT.hW=0.15;%main vibronic energy considered in eV
             params.CT.sigma=0.001;%gaussian distribution for CT state
             params.CT.Dmus=10*3.33e-30/1.6e-19;%difference in static dipole moment (10 in DEbye ) then th
-            params.CT.numbrestate=1;
+            params.CT.numbrestate=2;
             %%%%%%% add this to account for the effect of Hybredisation
             params.Vstar=0.020; % Coupling between S1 and CT in eV
             Prec.params=params;
@@ -63,7 +63,7 @@ classdef paramsRec
             for m=0:1:params.Number_Vibronic_Mode_final
                 for n=0:1:params.Number_Vibronic_Mode_initial
 
-                    params.funlaguerre{m+1,n+1} = @(y)  laguerreL(n,(m-n),y);
+                    params.funlaguerre(m+1,n+1) =  laguerreL(n,(m-n),params.S);
                 end
             end
         end 
@@ -134,12 +134,15 @@ classdef paramsRec
         function params=FCWD(params,const)
 
             %%%%%%%%%%%%%%%%Laguerre poly%%%%%%%%%%%%%%%%
-            laguerrecalc=zeros(params.Number_Vibronic_Mode_initial+1,params.Number_Vibronic_Mode_final+1);
-            for m=0:1:params.Number_Vibronic_Mode_final
-                for n=0:1:params.Number_Vibronic_Mode_initial
-                    laguerrecalc(m+1,n+1)=params.funlaguerre{m+1,n+1}(params.S);
-                end
-            end
+            
+            laguerrecalc=params.funlaguerre;
+            %zeros(params.Number_Vibronic_Mode_initial+1,params.Number_Vibronic_Mode_final+1);
+%             for m=0:1:params.Number_Vibronic_Mode_final
+%                 for n=0:1:params.Number_Vibronic_Mode_initial
+%                     laguerrecalc(m+1,n+1)=params.funlaguerre{m+1,n+1}(params.S);
+%                 end
+%             end
+            
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             istate=0;
             
