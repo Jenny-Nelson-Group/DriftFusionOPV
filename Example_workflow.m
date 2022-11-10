@@ -6,12 +6,12 @@
 %% SET PARAMETERS and make Device
 % Set and adjust the Recombination Parameters
 %open("C:\Users\jolan\DATA_Local\01 Documents\03 Work\04 Imperial PhD\10 TO SORT\Exp_CN-Tp_3.fig")
-open("C:\Users\jsm121\LOCAL DATA\Imperial PhD\10 TO SORT\Exp_2F-Tp_3.fig")
+open("C:\Users\jsm121\LOCAL DATA\Imperial PhD\10 TO SORT\Exp_all_3.fig")
 addpath(genpath(pwd)); % add folders to path
 
 %%
 Prec                        = paramsRec;                    % initiliase the recombination parameters (default values)
-offset                      = 0.320;                  % eV    % energy difference between the excited state and the CT state
+offset                      = 0.25;                  % eV    % energy difference between the excited state and the CT state
 Prec.params.tickness        = 100 * 1e-9;           % m     % thickness of the active layer
 Prec.params.Ex.DG0          = 1.35;                 
 Prec.params.CT.DG0          = Prec.params.Ex.DG0 - offset;
@@ -26,7 +26,7 @@ Prec.params.Ex.Li           = 0.05; %0.15   %0.04-0.150
 Prec.params.CT.L0           = 0.07;  %0.18  %CT smoothing
 Prec.params.CT.Li           = 0.1;   %0.15
 Prec.params.RCTE            = 1e-2;
-Prec.params.Excitondesnity  = 2e27;
+Prec.params.Excitondesnity  = 3e27;
 Prec.params.Vstar           = 0.000;
 Prec.const.T                = 300;
 Prec                        = paramsRec.calcall(Prec); % Update the Recombination Parameters
@@ -40,9 +40,9 @@ Voc     = Prec.results.Vocrad - Prec.results.Dvnr;
 
 activelayer = 2;        % Active Layer Index                % integer
 NC          = 2e19;     % Number of Charge Carriers         % cm^-3
-Kfor        = 1e-10;    % Rate Constant CS to CT            % cm^3 / s
-kdis        = 1e10;      % Rate Constant CT dissociation     % 1 / s
-kdisex      = 2e10;      % Rate Constatn Ex dissociation     % 1 / s
+Kfor        = 2e-10;    % Rate Constant CS to CT            % cm^3 / s
+kdis        = 1e8;      % Rate Constant CT dissociation     % 1 / s
+kdisex      = 1e10;      % Rate Constatn Ex dissociation     % 1 / s
 mobility    = 2e-4;     % Charge Carrier Mobility           % cm^2 / V / s
 
 % deviceParameterFile = uigetfile('parameters\DeviceParameters_Default.xlsx');
@@ -65,7 +65,9 @@ clear NC activelayer Tq1exp mobility kdis kdisex
 fignumber = 1;
 DP.simulate_PL(Prec,fignumber);
 DP.simulate_EL(Prec,fignumber);
-DP.simulateTAS(2e10,1e27,fignumber);
+%DP.simulateTAS(2e10,1e27,fignumber);
+DP.Layers{2}.r0_CT= 0;
+DP.Layers{2}.r0_Ex = 4e-7;
 
 % plot EQE from Prec
 figure(fignumber)
@@ -103,10 +105,17 @@ pause(0.1) %give the figure time to finish
     
     %%
     % plot JV
-    figure(2)
+    figure(fignumber)
+    subplot(2,2,4)
     %dfplot.JV_new(DV2.sol_JV(2),1)
     hold on
     [Jsc,Voc,FF,JJ,VV] = dfplot.JV_new(DV2.sol_JV(end),1);
+    %title("Jsc ="+Jsc+", FF = "+FF+", Voc = "+Voc)
     hold on
     %plot([0,1],[0,0]);
     xlim([-0., 1]);
+%%
+    figure(fignumber)
+    subplot(2,2,2)
+    hold on
+    dfplot.photoluminescence(DV2,2,0,1)

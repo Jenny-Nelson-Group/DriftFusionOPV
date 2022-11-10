@@ -183,14 +183,19 @@ classdef dfplot
                     
                 end
             end
-                J = dfana.calcJ(sol);
-                Vapp= dfana.calcVapp(sol);
-            
+            J = dfana.calcJ(sol);
+            Vapp= dfana.calcVapp(sol);
+            Jsc=-interp1(Vapp,J.tot(:,end),0)*1e3;%in mAcm-2
+            Voc=interp1(J.tot(:,end),Vapp,0);
+            FF=max(-Vapp.*J.tot(:,end)*1e3)/(Voc*Jsc);
+            JJ=J.tot(:,end)*1e3;
+            VV=Vapp;
+            plot_name = "sim: Jsc ="+Jsc+", FF = "+FF+", Voc = "+Voc;
             if figureplot==1
                 hold on
                 Jtot = J.tot(:,end) + Vapp/Rshunt;
                 
-                plot(Vapp, Jtot,'DisplayName',plot_name);
+                plot(Vapp, Jtot,'DisplayName',plot_name,'Color','r','LineWidth',2);
                 ylim([-0.030, 0.010]);
                 %plot(Vapp, Jtot*1e3,'DisplayName',plot_name);
                 %ylim([-30, 10]);      
@@ -199,11 +204,8 @@ classdef dfplot
                 ylabel('Current density [mA/cm^2]');
                 hold off
             end
-            Jsc=-interp1(Vapp,J.tot(:,end),0)*1e3;%in mAcm-2
-            Voc=interp1(J.tot(:,end),Vapp,0);
-            FF=max(-Vapp.*J.tot(:,end)*1e3)/(Voc*Jsc);
-            JJ=J.tot(:,end)*1e3;
-            VV=Vapp;
+
+            
         end
         function JV(JV, option)
             % JV - a solution from doJV
@@ -1035,16 +1037,18 @@ classdef dfplot
                 disp("the dark JV does not exist")
             else
                 krE=DV.Prec.params.CT.results.krE*CTsum+DV.Prec.params.Ex.results.krE*Exsum;
+                norm_PL = max(krE);
+                %norm_PL = 1;
                 tableres(end+1)=max(krE);
-                semilogy(DV.Prec.const.Edistribution,krE)
+                semilogy(DV.Prec.const.Edistribution,krE/norm_PL)
                 hold on
-                semilogy(DV.Prec.const.Edistribution,DV.Prec.params.CT.results.krE*CTsum)
-                semilogy(DV.Prec.const.Edistribution,DV.Prec.params.Ex.results.krE*Exsum)
+                semilogy(DV.Prec.const.Edistribution,DV.Prec.params.CT.results.krE*CTsum/norm_PL)
+                semilogy(DV.Prec.const.Edistribution,DV.Prec.params.Ex.results.krE*Exsum/norm_PL)
                 X=DV.Prec.const.Edistribution;
                 Y=krE/max(krE);
                 xlabel('Energy [eV]')
                 ylabel('Photoluminescence Emission  [a.u]')
-                ylim([max(krE)*1e-3, max(krE)])
+                ylim([max(krE)/norm_PL*1e-3,max(krE)/norm_PL])
                 legend("ToT","From CT","FromEx")
                 title(['Photoluminescence at ' num2str(Voltageapp) ' V under ' num2str(G) ' LI and injected current ' num2str(CurrInjected) 'mA cm-2'])
                 Rec_Rate_rad=DV.Prec.params.Ex.results.krTot*Exsum+DV.Prec.params.CT.results.krTot*CTsum;
@@ -1057,6 +1061,7 @@ classdef dfplot
                 disp(['non radiative voltage loss is ' num2str(Prec.results.Dvnr) ' V']);
             end
         end
+
         function [X,Y,tableres]=photoluminescence_mult(DV,layernum,Voltage,G,label)
             CTsum=0;
             for sol = DV.sol_JV
