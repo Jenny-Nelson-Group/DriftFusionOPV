@@ -235,7 +235,7 @@ classdef dfana
             end
            
             dev = dfana.develop_half(sol);
-            rg = dev.kdis.*exp(-(FV_ihalf).*dev.r0./(sol.params.physical_const.kB*sol.params.physical_const.T)).*CT_ihalf-dev.kfor.*(n_ihalf.*p_ihalf);
+            rg = dev.kdis.*exp(abs((FV_ihalf)).*dev.r0_CT./(sol.params.physical_const.kB*sol.params.physical_const.T)).*CT_ihalf-dev.kfor.*(n_ihalf.*p_ihalf);
 %             EXfunction= sol.params.light_properties.Genstrength-dev.kdisexc.*(Ex_ihalf)-dev.krecexc.*(Ex_ihalf-dev.Ex0)+dev.kforEx.*(CT_ihalf);
 %             CTfunction=dev.kdisexc.*(Ex_ihalf)+dev.kfor.*(n_ihalf.*p_ihalf)-dev.kdis.*exp(-(FV_ihalf).*dev.r0./(sol.params.physical_const.kB*sol.params.physical_const.T)).*CT_ihalf+dev.krec.*(CT_ihalf-dev.CT0)-dev.kforEx.*(CT_ihalf);
 %             figure

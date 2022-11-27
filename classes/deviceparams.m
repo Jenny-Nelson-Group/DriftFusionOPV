@@ -358,11 +358,11 @@ classdef deviceparams
             tickness=DP.Layers{activelayer}.tp;%in cm
             kbT=DP.physical_const.kB*DP.physical_const.T;%in eV
             q=DP.physical_const.e;
-            offset=Prec.params.Ex.DG0-Prec.params.CT.DG0;
+            offsetLECT=Prec.params.Ex.DG0-Prec.params.CT.DG0;
             krecex=Prec.params.Ex.results.knr+Prec.params.Ex.results.krTot;
             krecCT=Prec.params.CT.results.knr+Prec.params.CT.results.krTot;
             RCTE=Prec.params.RCTE;
-            CT0=Prec.results.R0rad/q/1e3/(Prec.params.CT.results.krTot+Prec.params.Ex.results.krTot*exp(-offset/kbT)/RCTE);
+            CT0=Prec.results.R0rad/q/1e3/(Prec.params.CT.results.krTot+Prec.params.Ex.results.krTot*exp(-offsetLECT/kbT)/RCTE);
 
             %%%%%%%%%%%%estimated value
             %             ECS=Vocexp./idealityfactor+kbT*log(Beff_ref*(Tq1exp_ref./Tq1exp).^2)-kbT*log(idealityfactor.*Jsc./NC^2/tickness/q/1e3);%in eV
@@ -401,12 +401,24 @@ classdef deviceparams
                             offset_CTCS=Prec.params.CT.DG0-ECS;
                             kdis=marcusrate(Hab_CT_dis,L0_CT_dis,offset_CTCS);
                         end
+                    case 4
+                        ECS=varargin{1};
+                        Hab_CT_dis=varargin{3};
+                        marcusrate=varargin{5};
+                        L0_CT_dis=varargin{4};
+                        Hab_LE_dis=varargin{6};
+                        L0_LE_dis=varargin{7};
+                        offset_CTCS=Prec.params.CT.DG0-ECS;
+                        kdis=marcusrate(Hab_CT_dis,L0_CT_dis,offset_CTCS);
+                        kdisex=marcusrate(Hab_LE_dis,L0_LE_dis,offsetLECT);
+                        ni=NC*exp(-ECS/2/kbT);
+                        kfor=(CT0*kdis/ni^2);
                               
                 end
                 
               
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                kforEx=kdisex.*exp(-offset/kbT)/Prec.params.RCTE;
+                kforEx=kdisex.*exp(-offsetLECT/kbT)/Prec.params.RCTE;
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 DP.Layers{2}.krec=krecCT;%1e9;%krecm(jj);
                 DP.Layers{2}.kdis=kdis;%3.4e10;
@@ -417,11 +429,7 @@ classdef deviceparams
                 DP.Layers{2}.IP=-ECS;
                 DP.Layers{1}.IP=-ECS;
                 DP.Layers{3}.IP=-ECS;
-                DP.Layers{1}.krecexc=krecex;
-                DP.Layers{3}.krecexc=krecex;
                 DP.Layers{2}.krecexc=krecex;
-                DP.Layers{1}.kforEx=kforEx;
-                DP.Layers{3}.kforEx=kforEx;
                 DP.Layers{2}.kforEx=kforEx;
                 DP.Layers{2}.N0V=NC;
                 DP.Layers{1}.N0V=NC;
@@ -439,7 +447,7 @@ classdef deviceparams
                 DP = Xgrid(DP);
                 DP=update_time(DP);
                 DP=Timemesh(DP);
-                DP.results.J0 = CT0*tickness*q*1e3 * (Prec.params.CT.results.knr + (Prec.params.Ex.results.knr) * exp(-offset/kbT) / Prec.params.RCTE) + Prec.results.J0rad;
+                DP.results.J0 = CT0*tickness*q*1e3 * (Prec.params.CT.results.knr + (Prec.params.Ex.results.knr) * exp(-offsetLECT/kbT) / Prec.params.RCTE) + Prec.results.J0rad;
                 DP.results.DVnr = -kbT*log(Prec.results.J0rad / DP.results.J0);
                 DP.results.Voc = Prec.results.Vocrad - DP.results.DVnr;
                 DP.results.Vocrad=Prec.results.Vocrad;
@@ -490,13 +498,13 @@ classdef deviceparams
             kk=2;
             tspan = [0 1e-1];
             u0 = [DP.Layers{kk}.ni,DP.Layers{kk}.ni,DP.Layers{kk}.CT0,DP.Layers{kk}.Ex0];            
-            [t,yeq] = ode15s(@(t,u) kineticmodel(DP,kk,u,G,0), tspan, u0);
+            [t,yeq] = ode15s(@(t,u) kineticmodel(DP,kk,u,G,0,0), tspan, u0);
             tspan = [0 0.2e-12];
             u0 = yeq(end,:);
-            [t,y] = ode15s(@(t,u) kineticmodel(DP,kk,u,G+Gpulse,0), tspan, u0);
+            [t,y] = ode15s(@(t,u) kineticmodel(DP,kk,u,G+Gpulse,0,0), tspan, u0);
             tspan = [0 10E-9];
             u0 = y(end,:);
-            [t,y] = ode15s(@(t,u) kineticmodel(DP,kk,u,G,0), tspan, u0);
+            [t,y] = ode15s(@(t,u) kineticmodel(DP,kk,u,G,0,0), tspan, u0);
             figure(fighandle)
             subplot(2,2,4)
 %             semilogx(t*1e12,(y-yeq(end,:))./max(y-yeq(end,:)),'-o')
@@ -515,7 +523,7 @@ classdef deviceparams
 
         end
         function [X,Y,Z]=simulate_EL(DP,Prec,fighandle)
-            [t,y]=solveKineticmodel(DP,0,1e25);
+            [t,y]=solveKineticmodel(DP,0,0,1e25);
             CTsum=y(end,3);
             Exsum=y(end,4);
             
@@ -884,7 +892,7 @@ classdef deviceparams
 
         end
         function [X,Y,Z]=simulate_PL(DP,Prec,fighandle)
-            [t,y]=solveKineticmodel(DP,1e25,0);
+            [t,y]=solveKineticmodel(DP,1e25,0,0);
             CTsum=y(end,3);
             Exsum=y(end,4);
             figure(fighandle)

@@ -6,15 +6,15 @@
 % 
 %% do not forget to install the symbolic math package*
 Temp=300;
-AL_thickness=200*1e-7;
+AL_thickness=100*1e-7;
 Prec=paramsRec;%first initiliase the recombination parameters ( the parameters are set here by default and can be changed under or in the paramRec function
 %below are a set of parameters that can be changed
 Prec.params.Ex.DG0=1.63;
 Prec.params.CT.f=5e-2;
-offset=0.1;
+offset=0.2;
 Prec.params.tickness=AL_thickness*1e-2;%in m
 Prec.params.CT.DG0=Prec.params.Ex.DG0-offset;
-Prec.params.RCTE=1e-1;
+Prec.params.RCTE=1e-4;
 Prec.params.Ex.Li=0.15;
 Prec.params.CT.Li=0.15;
 Prec.params.CT.L0=0.18;
@@ -68,10 +68,13 @@ lg.String{end}='infinite';
 clear EL_maxint PL_maxint
 close all
 kk=0;
-variablelist=[1,5,10,50,100];
+variablelist=[300,250,200,150,100];
 for Var_name=variablelist
     DP.External_prop.Rseries=0;
     DP.Experiment_prop.BC =3;
+    Prec.const.T=Var_name;
+    Prec=paramsRec.calcall(Prec);%this line calculated the different properties of the states.
+
     sn=1e5;
     DP.External_prop.sn_l=sn;%left Electron extraction/surface recombination coefficient in cm s^-1
     DP.External_prop.sn_r=sn;%right Electron extraction/surface recombination coefficient in cm s^-1
@@ -79,10 +82,11 @@ for Var_name=variablelist
     DP.External_prop.sp_r=sn;%right hole extraction/surface recombination coefficient in cm s^-1
     tic
     NC=2e19;activelayer=2;Kfor=1e-11;%V in V, K in S-1, NC in Cm-3, Jsc in mA cm-2,
-    mobility=3e-4;kdis=1.3e10;kdisex=1e11;% Tq1 in s,mobility in Cm2V-1s-1
-    DP=DP.generateDeviceparams(NC,activelayer,mobility/Var_name,kdis,kdisex,Prec,1e-11,0);
+    mobility=1e-3*exp(-0.04/0.026*300/Var_name)
+    kdis=1.3e10;kdisex=5e9;% Tq1 in s,mobility in Cm2V-1s-1
+    DP=DP.generateDeviceparams(NC,activelayer,mobility,kdis,kdisex,Prec,1e-11,0);
 
-    DV2=device(DP,DV_infinite.sol_eq);
+    DV2=device(DP);
     DV2.Prec=Prec;
     toc
     
@@ -94,7 +98,14 @@ for Var_name=variablelist
     tic
     DV2=device.runsolJV(DV2,G,Vstart,Vend);
     toc
-
+    G=1;
+    tic
+    DV2=device.runsolJsc(DV2,G);
+    toc
+    
+    tic
+    DV2=device.runsolJV(DV2,G,Vstart,Vend);
+    toc
     assignin('base',"DV_MT"+num2str(Var_name),DV2)
     
     %%
@@ -109,14 +120,14 @@ hold on
 lg=legend();
 lg.String{end}=num2str(Var_name);%num2str(log(Rseries)/log(10));
 subplot(2,2,2)
-[~,ELplot]=dfplot.Electroluminescence_multi(DV2,2,0,0.1,num2str(Var_name));
+[~,ELplot]=dfplot.Electroluminescence_multi(DV2,2,0,0.01,num2str(Var_name));
 EL_maxint(kk)=max(ELplot);
 hold on 
-xlim([0.9,1.6])
+xlim([0.9,1.8])
 
 subplot(2,2,3)
-[~,PLplot,~]=dfplot.photoluminescence_mult(DV2,2,1,1e-6,num2str(Var_name));
-xlim([0.9,1.6])
+[~,PLplot,~]=dfplot.photoluminescence_mult(DV2,2,1,1,num2str(Var_name));
+xlim([0.9,1.8])
 PL_maxint(kk)=max(PLplot);
 hold on 
 

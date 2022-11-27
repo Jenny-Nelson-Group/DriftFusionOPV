@@ -104,7 +104,9 @@ classdef paramsRec
             %%%
             params.offset=params.Ex.DG0-params.CT.DG0;            
             const.bb=blackbody(const.T,const.Edistribution);
-            params.CT.Dmu=params.CT.Dmu+params.Vstar*params.Ex.Dmu/params.offset;
+            if params.offset>0
+                params.CT.Dmu=params.CT.Dmu+params.Vstar*params.Ex.Dmu/params.offset;
+            end
             Prec.params=params;
             Prec.const=const;
         end
