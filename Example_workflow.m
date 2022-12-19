@@ -8,9 +8,9 @@
 addpath(genpath(pwd)); % add folders to path
 
 Prec                        = paramsRec;                    % initiliase the recombination parameters (default values)
-offset                      = 0.25;                  % eV    % energy difference between the excited state and the CT state
-Prec.params.tickness        = 10 * 1e-9;           % m     % thickness of the active layer
-Prec.params.Ex.DG0          = 1.36;                 
+offset                      = 0.55;                  % eV    % energy difference between the excited state and the CT state
+Prec.params.tickness        = 100 * 1e-9;           % m     % thickness of the active layer
+Prec.params.Ex.DG0          = 1.8;                 
 Prec.params.CT.DG0          = Prec.params.Ex.DG0 - offset;
 Prec.params.Ex.f            = 2.56;
 Prec.params.CT.f            = 2e-4;
@@ -18,10 +18,10 @@ Prec.params.Ex.sigma        = 0.01;
 Prec.params.CT.sigma        = 0.01;
 Prec.params.Ex.numbrestate  = 1;
 Prec.params.CT.numbrestate  = 1;
-Prec.params.Ex.L0           = 0.06;  %0.10
-Prec.params.Ex.Li           = 0.045; %0.15   %0.04-0.150
-Prec.params.CT.L0           = 0.07;  %0.18  %CT smoothing
-Prec.params.CT.Li           = 0.1;   %0.15
+Prec.params.Ex.L0           = 0.1;  %0.10
+Prec.params.Ex.Li           = 0.1; %0.15   %0.04-0.150
+Prec.params.CT.L0           = 0.2;  %0.18  %CT smoothing
+Prec.params.CT.Li           = 0.2;   %0.15
 Prec.params.RCTE            = 1e-2;
 Prec.params.Excitondesnity  = 1e26;
 Prec.params.Vstar           = 0.000;
@@ -79,8 +79,8 @@ pause(0.1) %give the figure time to finish
     Vstart  = 0;
     Vend    = 1.5;
     tic
-    DP.Layers{2}.r0=0; %R0 for field dependence is 1 nm
-
+    DP.Layers{2}.r0_CT=0; %R0 for field dependence is 1 nm
+    DP.Layers{2}.r0_Ex=0; 
     DV2=device(DP);
     DV2.Prec=Prec;
     toc
