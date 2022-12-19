@@ -62,11 +62,11 @@ clear NC activelayer Tq1exp mobility kdis kdisex
 fignumber = 1;
 DP.simulate_PL(Prec,fignumber);
 DP.simulate_EL(Prec,fignumber);
-DP.simulateTAS(2e10,1e27,fignumber);
+%DP.simulateTAS(2e10,1e27,fignumber);
 
 % plot EQE from Prec
 figure(fignumber)
-subplot(2,2,1)
+subplot(3,1,1)
 semilogy(Prec.const.Edistribution, Prec.results.AbsLJ,'LineWidth',2,'Color',[1,0,0]); hold on
 xlabel('Energy [eV]')
 ylabel('EQE [a.u]')
