@@ -5,7 +5,7 @@ function y=EquilibratePNHCT(Vapp,p)
 % p.discretetrap=0;
 % EAN0=p.EAn;
 %p.NI = a;
-p.Time_properties.tpoints = 50;
+%p.Time_properties.tpoints = 50;
 
 p.Experiment_prop.equilibrium=0;
 p.Experiment_prop.symm=0;

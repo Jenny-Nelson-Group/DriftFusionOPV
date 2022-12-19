@@ -506,7 +506,7 @@ classdef deviceparams
             u0 = y(end,:);
             [t,y] = ode15s(@(t,u) kineticmodel(DP,kk,u,G,0,0), tspan, u0);
             figure(fighandle)
-            subplot(2,2,4)
+%             subplot(2,2,4)
 %             semilogx(t*1e12,(y-yeq(end,:))./max(y-yeq(end,:)),'-o')
            
             semilogx(t*1e12,(y(:,1)+y(:,3)-yeq(end,1)-yeq(end,3))./max((y(:,1)+y(:,3)-yeq(end,1)-yeq(end,3))),'-o',"DisplayName","GSB model");
