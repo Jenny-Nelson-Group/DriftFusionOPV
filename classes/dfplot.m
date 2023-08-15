@@ -183,8 +183,20 @@ classdef dfplot
                     
                 end
             end
-            J = dfana.calcJ(sol);
-            Vapp= dfana.calcVapp(sol);
+
+            if figureplot==1
+                hold on
+                middlepoint=floor(length(J.tot(1,:))/2);
+                Jtot = J.tot(:,middlepoint) + Vapp/Rshunt;
+                plot(Vapp, Jtot*1000,'DisplayName',plot_name);
+                
+                ylim([-30, 10]);
+                %ylim([-30e-3, 10e-3]);
+                xlabel('Applied voltage [V]')
+                ylabel('Current density [mA/cm^2]');
+                hold off
+            end
+            
             Jsc=-interp1(Vapp,J.tot(:,end),0)*1e3;%in mAcm-2
             Voc=interp1(J.tot(:,end),Vapp,0);
             FF=max(-Vapp.*J.tot(:,end)*1e3)/(Voc*Jsc);
@@ -1402,6 +1414,43 @@ classdef dfplot
                     xlim([0,t(TPVend)])
                     TTPV=-1/f.b;
                     title("Generation "+num2str(G)+" T_Q_1 "+num2str(TQ1*1e6)+" T_Q_2 "+num2str(TQ2*1e6)+" us T_T_P_V "+num2str(TTPV*1e6)+" us");
+                end
+            end
+        end
+        function TPQ(DV,G,layernum)
+            for sol = DV.ssol_TPV
+                if sol.params.light_properties.Int==G
+                    [u,t,x,par,n,p,CT,Ex,V] = dfana.splitsol(sol);
+                    [~, ~, Efn, Efp] = dfana.QFLs(sol);
+                    VQFL = Efn(:, (length(x)+1)/2) - Efp(:, 1);
+                    VQFL=VQFL-VQFL(1);
+                    rho = dfana.calcrho(sol);
+                    tstart=par.pulse_properties.tstart;
+                    tpulse=par.pulse_properties.pulselen;
+                    XR=par.Layers{layernum}.XR;
+                    XL=par.Layers{layernum}.XL;
+                    CTsum=trapz(x(x>XL & x<XR), CT(:,x>XL & x<XR), 2);
+                    Exsum=trapz(x(x>XL & x<XR), Ex(:,x>XL & x<XR), 2);
+                    rhosum=-trapz(x(x>XL & x<XR), rho(:,x>XL & x<XR), 2);
+                    nsum=trapz(x(x>XL & x<XR), n(:,x>XL & x<XR), 2)/(XR-XL);
+                    N0=nsum(1);
+                    nsum=nsum-nsum(1);
+                    rhosum=rhosum-rhosum(1);
+                    
+
+                    semilogy(t-tstart, nsum)%/max((Exsum-Exsum(1))))
+                    hold on
+             
+                    
+                    xlabel('Time [s]')
+                    ylabel('Normalised Excess Charge carrier density [cm^-^3]')
+                    %                     xlim([max(t(1),1e-12), t(end)])
+%                     ylim([1e-2,1.1])
+                    
+                    legend("V_o_c "+num2str(G)+" sun","Q "+num2str(G)+" sun","CT "+num2str(G)+" sun","Ex "+num2str(G)+" sun")
+                    
+                    %%
+                    
                 end
             end
         end

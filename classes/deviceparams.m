@@ -507,7 +507,7 @@ classdef deviceparams
             u0 = y(end,:);
             [t,y] = ode15s(@(t,u) kineticmodel(DP,kk,u,G,0,0), tspan, u0);
             figure(fighandle)
-            subplot(2,2,4)
+%             subplot(2,2,4)
 %             semilogx(t*1e12,(y-yeq(end,:))./max(y-yeq(end,:)),'-o')
            
             semilogx(t*1e12,(y(:,1)+y(:,3)-yeq(end,1)-yeq(end,3))./max((y(:,1)+y(:,3)-yeq(end,1)-yeq(end,3))),'-o',"DisplayName","GSB model");
@@ -530,7 +530,7 @@ classdef deviceparams
             
             krE=Prec.params.CT.results.krE*CTsum+Prec.params.Ex.results.krE*Exsum;
             figure(fighandle)
-            subplot(2,2,3)
+            subplot(3,1,3)
             semilogy(Prec.const.Edistribution,krE/max(krE),'DisplayName',"Total",'Color',[1,0,0],'LineWidth',2)
             hold on
             semilogy(Prec.const.Edistribution,Prec.params.CT.results.krE*CTsum/max(krE),'--','DisplayName',"CT contribution",'Color',[1, 0.66, 0.59])
@@ -897,7 +897,7 @@ classdef deviceparams
             CTsum=y(end,3);
             Exsum=y(end,4);
             figure(fighandle)
-            subplot(2,2,2)
+            subplot(3,1,2)
             krE=Prec.params.CT.results.krE*CTsum+Prec.params.Ex.results.krE*Exsum;
             norm_PL = max(krE);
             %norm_PL = 1;
