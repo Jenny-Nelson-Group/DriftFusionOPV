@@ -183,20 +183,23 @@ classdef dfplot
                     
                 end
             end
-
-            if figureplot==1
-                hold on
-                middlepoint=floor(length(J.tot(1,:))/2);
-                Jtot = J.tot(:,middlepoint) + Vapp/Rshunt;
-                plot(Vapp, Jtot*1000,'DisplayName',plot_name);
-                
-                ylim([-30, 10]);
-                %ylim([-30e-3, 10e-3]);
-                xlabel('Applied voltage [V]')
-                ylabel('Current density [mA/cm^2]');
-                hold off
-            end
             
+            J = dfana.calcJ(sol);
+            Vapp= dfana.calcVapp(sol);
+
+%             if figureplot==1
+%                 hold on
+%                 middlepoint=floor(length(J.tot(1,:))/2);
+%                 Jtot = J.tot(:,middlepoint) + Vapp/Rshunt;
+%                 plot(Vapp, Jtot*1000,'DisplayName',plot_name);
+%                 
+%                 ylim([-30, 10]);
+%                 %ylim([-30e-3, 10e-3]);
+%                 xlabel('Applied voltage [V]')
+%                 ylabel('Current density [mA/cm^2]');
+%                 hold off
+%             end
+
             Jsc=-interp1(Vapp,J.tot(:,end),0)*1e3;%in mAcm-2
             Voc=interp1(J.tot(:,end),Vapp,0);
             FF=max(-Vapp.*J.tot(:,end)*1e3)/(Voc*Jsc);

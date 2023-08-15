@@ -82,7 +82,7 @@ DP.simulate_EL(Prec,fignumber);
 
 % plot EQE from Prec
 figure(fignumber)
-subplot(3,1,1)
+subplot(2,2,1)
 semilogy(Prec.const.Edistribution, Prec.results.AbsLJ,'LineWidth',2,'Color',[1,0,0]); hold on
 xlabel('Energy [eV]')
 ylabel('EQE [a.u]')

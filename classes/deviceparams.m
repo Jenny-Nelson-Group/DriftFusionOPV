@@ -530,7 +530,7 @@ classdef deviceparams
             
             krE=Prec.params.CT.results.krE*CTsum+Prec.params.Ex.results.krE*Exsum;
             figure(fighandle)
-            subplot(3,1,3)
+            subplot(2,2,3)
             semilogy(Prec.const.Edistribution,krE/max(krE),'DisplayName',"Total",'Color',[1,0,0],'LineWidth',2)
             hold on
             semilogy(Prec.const.Edistribution,Prec.params.CT.results.krE*CTsum/max(krE),'--','DisplayName',"CT contribution",'Color',[1, 0.66, 0.59])
@@ -897,7 +897,7 @@ classdef deviceparams
             CTsum=y(end,3);
             Exsum=y(end,4);
             figure(fighandle)
-            subplot(3,1,2)
+            subplot(2,2,2)
             krE=Prec.params.CT.results.krE*CTsum+Prec.params.Ex.results.krE*Exsum;
             norm_PL = max(krE);
             %norm_PL = 1;
