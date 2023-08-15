@@ -1074,7 +1074,6 @@ classdef dfplot
                 Prec.results.Qe=1/((1+(Prec.results.pe-1)*Prec.results.Qi)/Prec.results.pe/Prec.results.Qi);
                 Prec.results.Dvnr=Prec.const.kb*Prec.const.T*(log((1+(Prec.results.pe-1)*Prec.results.Qi)/Prec.results.pe/Prec.results.Qi));
                 DV.Prec=Prec;
-                disp(['non radiative voltage loss is ' num2str(Prec.results.Dvnr) ' V']);
             end
         end
 
