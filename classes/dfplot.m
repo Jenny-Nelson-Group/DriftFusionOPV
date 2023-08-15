@@ -1052,14 +1052,14 @@ classdef dfplot
             else
                 krE=DV.Prec.params.CT.results.krE*CTsum+DV.Prec.params.Ex.results.krE*Exsum;
                 %norm_PL = max(krE);
-                norm_PL = 1e15;
+                norm_PL = 4e14;
                 tableres(end+1)=max(krE);
                 %xxx = DV.Prec.const.Edistribution;
                 xxx = 1240./DV.Prec.const.Edistribution;
-                semilogy(xxx,krE/norm_PL)
+                semilogy(xxx,krE/norm_PL,'DisplayName',"Total",'Color','red','LineWidth',2)
                 hold on
-                semilogy(xxx,DV.Prec.params.CT.results.krE*CTsum/norm_PL)
-                semilogy(xxx,DV.Prec.params.Ex.results.krE*Exsum/norm_PL)
+                %semilogy(xxx,DV.Prec.params.CT.results.krE*CTsum/norm_PL)
+                %semilogy(xxx,DV.Prec.params.Ex.results.krE*Exsum/norm_PL)
                 X=DV.Prec.const.Edistribution;
                 Y=krE/max(krE);
                 xlabel('Energy [eV]')
