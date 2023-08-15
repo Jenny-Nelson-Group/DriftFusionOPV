@@ -363,7 +363,8 @@ classdef deviceparams
             krecCT=Prec.params.CT.results.knr+Prec.params.CT.results.krTot;
             RCTE=Prec.params.RCTE;
             CT0=Prec.results.R0rad/q/1e3/(Prec.params.CT.results.krTot+Prec.params.Ex.results.krTot*exp(-offsetLECT/kbT)/RCTE);
-
+            
+            DP.results.CT0 = CT0;
             %%%%%%%%%%%%estimated value
             %             ECS=Vocexp./idealityfactor+kbT*log(Beff_ref*(Tq1exp_ref./Tq1exp).^2)-kbT*log(idealityfactor.*Jsc./NC^2/tickness/q/1e3);%in eV
             %in cm-3s-1
