@@ -29,7 +29,7 @@
 % 3/5/15 Improved precision of fundamental constants
 
 
-function [Xpos,Gx]=TransferMatrix_generation(activelayertickness,name,lightinesity)
+function [Xpos,Gx]=TransferMatrix_generation(activelayerthickness,name,lightinesity)
 %------------BEGIN USER INPUT PARAMETERS SPECITIFCATION---------------
 %
 lambda=350:1000; % Wavelengths over which field patterns are calculated
@@ -40,7 +40,7 @@ stepsize = 1;   % The electric field is calculated at a latice of points (nm)
 % thicknesses.
 %
 layers = { 'quartz1' 'ITO' 'ZnO' name 'MO' 'Ag'}; % Names of layers of materials starting from side light is incident from
-thicknesses = [1000 100 25 activelayertickness 10 150];  % thickness of each corresponding layer in nm (thickness of the first layer is irrelivant)
+thicknesses = [1000 100 25 activelayerthickness 10 150];  % thickness of each corresponding layer in nm (thickness of the first layer is irrelivant)
 % Set plotGeneration to 'true' if you want to plot generation rate as a
 % function of position in the device and output the calculated short circuit current
 % under AM1.5G illumination (assuming 100% internal quantum efficiency)

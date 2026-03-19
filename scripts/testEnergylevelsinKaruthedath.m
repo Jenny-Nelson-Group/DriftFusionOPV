@@ -10,8 +10,8 @@ devicename=devicenames{kk};
 % eval(['expresults=' devicename ';']);
 
 eval(['Prec=DV_' devicename '_nofield.Prec;']);    % close all
-Prec.params.CT.numbrestate=1;
-Prec.params.Ex.numbrestate=1;
+Prec.params.CT.disorder_nStates=1;
+Prec.params.Ex.disorder_nStates=1;
 
 %%
 

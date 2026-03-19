@@ -4,21 +4,21 @@ addpath(genpath(pwd)); % add folders to path
 
 Prec                        = paramsRec;                    % initiliase the recombination parameters (default values)
 offset                      = 0.25;                  % eV    % energy difference between the excited state and the CT state
-Prec.params.tickness        = 10 * 1e-9;           % m     % thickness of the active layer
+Prec.params.thickness        = 10 * 1e-9;           % m     % thickness of the active layer
 Prec.params.Ex.DG0          = 1.36;                 
 Prec.params.CT.DG0          = Prec.params.Ex.DG0 - offset;
 Prec.params.Ex.f            = 2.56;
 Prec.params.CT.f            = 2e-4;
 Prec.params.Ex.sigma        = 0.01;
 Prec.params.CT.sigma        = 0.01;
-Prec.params.Ex.numbrestate  = 1;
-Prec.params.CT.numbrestate  = 1;
+Prec.params.Ex.disorder_nStates  = 1;
+Prec.params.CT.disorder_nStates  = 1;
 Prec.params.Ex.L0           = 0.06;  %0.10
 Prec.params.Ex.Li           = 0.045; %0.15   %0.04-0.150
 Prec.params.CT.L0           = 0.07;  %0.18  %CT smoothing
 Prec.params.CT.Li           = 0.1;   %0.15
 Prec.params.RCTE            = 1e-2;
-Prec.params.Excitondesnity  = 5e27;
+Prec.params.exciton_density  = 5e27;
 Prec.params.Vstar           = 0.000;
 Prec.const.T                = 300;
 Prec                        = paramsRec.calcall(Prec); % Update the Recombination Parameters
@@ -48,14 +48,14 @@ clear tableres
 
 Thickness_list=[10,20,40,60,80,100,200,400];
 count=0;
-for tickness_active_layer=Thickness_list
-Prec.params.tickness        = tickness_active_layer * 1e-9;           % m     % thickness of the active layer
-Prec.params.Excitondesnity  = 5e27;
+for thickness_active_layer=Thickness_list
+Prec.params.thickness        = thickness_active_layer * 1e-9;           % m     % thickness of the active layer
+Prec.params.exciton_density  = 5e27;
 Prec                        = paramsRec.calcall(Prec); % Update the Recombination Parameters
 
 DP.light_properties.OM      = 0; %to consider the transfer matrix generation profile
 DP.Time_properties.tpoints  = 100;
-DP.Layers{activelayer}.tp   = Prec.params.tickness * 100; % [cm] = [m] * 100
+DP.Layers{activelayer}.tp   = Prec.params.thickness * 100; % [cm] = [m] * 100
 
 DP = DP.generateDeviceparams(NC, activelayer, mobility, kdis, kdisex, Prec, Kfor, 0);
 % clear NC activelayer Tq1exp mobility kdis kdisex
@@ -84,7 +84,7 @@ DP = DP.generateDeviceparams(NC, activelayer, mobility, kdis, kdisex, Prec, Kfor
         DV2=device.runsolJV(DV2,Gen,Vstart,Vend);
         toc
 
-        [Jsc,Voc,FF,JJ,VV]=dfplot.JV_new(DV2.sol_JV(countsuns),1,0,num2str(tickness_active_layer));
+        [Jsc,Voc,FF,JJ,VV]=dfplot.JV_new(DV2.sol_JV(countsuns),1,0,num2str(thickness_active_layer));
         tableres(count).Voc=Voc;
         tableres(count).JJ=JJ;
         tableres(count).VV=VV;
@@ -92,7 +92,7 @@ DP = DP.generateDeviceparams(NC, activelayer, mobility, kdis, kdisex, Prec, Kfor
         tableres(count).Jsc=Jsc;
         tableres(count).Gen=Gen;
         tableres(count).mobility=mobility;
-        tableres(count).AL_thickness=tickness_active_layer;
+        tableres(count).AL_thickness=thickness_active_layer;
         tableres(count).temp=temp;
         tableres(count).Kfor=Kfor;
         tableres(count).Jscrad=Prec.results.Jscrad;
@@ -105,6 +105,6 @@ figure
 plot(tableres.AL_thickness,tableres.Jsc,'*','DisplayName',"Jsc from DD")
 hold on
 plot(tableres.AL_thickness,tableres.Jscrad,'*','DisplayName',"Ideal Jsc from Prec")
-            xlabel('Tickness [nm]')
+            xlabel('thickness [nm]')
             ylabel('current density  [mA cm-2 ]')
 legend

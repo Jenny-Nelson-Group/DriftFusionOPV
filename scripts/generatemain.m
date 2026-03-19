@@ -1,5 +1,5 @@
 % Read txt into cell A
-fid = fopen('test_tickness.m','r');
+fid = fopen('test_thickness.m','r');
 i = 1;
 tline = fgetl(fid);
 A{i} = tline;

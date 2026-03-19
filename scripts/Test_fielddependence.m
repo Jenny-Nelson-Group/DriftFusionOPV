@@ -3,13 +3,13 @@
 %Prec                        = DV_D4A2_CTdissfielddependent.Prec;
 Prec=paramsRec;% initiliase the recombination parameters (default values)
 % fixed model parameters for the efficiency limit exploration
-Prec.params.tickness        = 100 * 1e-9;
+Prec.params.thickness        = 100 * 1e-9;
 Prec.params.Ex.sigma        = 0.0001;Prec.params.CT.sigma        = 0.0001;
-Prec.params.Ex.numbrestate  = 1;Prec.params.CT.numbrestate  = 1;
+Prec.params.Ex.disorder_nStates  = 1;Prec.params.CT.disorder_nStates  = 1;
 Prec.const.Edistribution=0.5:0.005:4;%the energy distribution for the absorption spectra%need to be linearly spaced
   Prec.params.Ex.Number_Vibronic_Mode_initial=5;   Prec.params.Ex.Number_Vibronic_Mode_final=15;%number of vibronic mode considered for the ground state
   Prec.params.CT.Number_Vibronic_Mode_initial=5;  Prec. params.CT.Number_Vibronic_Mode_final=15;%number of vibronic mode considered for the ground state
-Prec.params.Excitondesnity  = 8e27; %in m-3
+Prec.params.exciton_density  = 8e27; %in m-3
 %energetics that will be changed along the exploration of the highest
 %efficiency
 Prec.const.T                = 300;
@@ -22,7 +22,7 @@ DP = deviceparams(['parameters\',deviceParameterFile]);
 activelayer = 2;
 DP.light_properties.OM      = 0; %to consider the transfer matrix generation profile
 DP.Time_properties.tpoints  = 100;
-DP.Layers{activelayer}.tp   = Prec.params.tickness * 100; % [cm] = [m] * 100
+DP.Layers{activelayer}.tp   = Prec.params.thickness * 100; % [cm] = [m] * 100
 % Active Layer Index                % integer
 NC          = 2e19;    %set to the same degeneracy as the CT state
 mobility    = 3e-3;%DV_D4A2_CTdissfielddependent.DP.Layers{2}.mue;     % Charge Carrier Mobility           % cm^2 / V / s
