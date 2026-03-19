@@ -18,21 +18,21 @@ end
 disp("---new---")
 Prec                        = paramsRec;                    % initiliase the recombination parameters (default values)
 offset                      = 0.20;                  % eV    % energy difference between the excited state and the CT state
-Prec.params.tickness        = 100 * 1e-9;           % m     % thickness of the active layer
+Prec.params.thickness        = 100 * 1e-9;           % m     % thickness of the active layer
 Prec.params.Ex.DG0          = 1.35;                 
 Prec.params.CT.DG0          = Prec.params.Ex.DG0 - offset;
 Prec.params.Ex.f            = 2.56;
 Prec.params.CT.f            = 1e-4;
 Prec.params.Ex.sigma        = 0.001;
 Prec.params.CT.sigma        = 0.001;
-Prec.params.Ex.numbrestate  = 21;
-Prec.params.CT.numbrestate  = 21;
+Prec.params.Ex.disorder_nStates  = 21;
+Prec.params.CT.disorder_nStates  = 21;
 Prec.params.Ex.L0           = 0.07; %0.10
 Prec.params.Ex.Li           = 0.07; %0.15   %0.04-0.150
 Prec.params.CT.L0           = 0.07; %0.18  %CT smoothing
 Prec.params.CT.Li           = 0.07; %0.15
 Prec.params.RCTE            = 2;  
-Prec.params.Excitondesnity  = 3e27;
+Prec.params.exciton_density  = 3e27;
 Prec.params.Vstar           = 0.0; % hybridisation: on: 0.01 /0.02 coupling between CT and ex
 Prec.const.T                = 300;
 Prec                        = paramsRec.calcall(Prec); % Update the Recombination Parameters
@@ -67,7 +67,7 @@ DP = deviceparams(['parameters\',deviceParameterFile]);
 
 DP.light_properties.OM      = 0;
 DP.Time_properties.tpoints  = 100;
-DP.Layers{activelayer}.tp   = Prec.params.tickness * 100; % [cm] = [m] * 100
+DP.Layers{activelayer}.tp   = Prec.params.thickness * 100; % [cm] = [m] * 100
 DP.Layers{2}.r0_CT          = 0;
 DP.Layers{2}.r0_Ex          = 0;
 

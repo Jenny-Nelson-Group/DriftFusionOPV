@@ -1,4 +1,4 @@
-% AL_thickness=200*1e-7;%active layer tickness
+% AL_thickness=200*1e-7;%active layer thickness
 kdis0=DV_D4A2_nofield.DP.Layers{2}.kdis;
 kfor0=DV_D4A2_nofield.DP.Layers{2}.kfor;
 counter=1;

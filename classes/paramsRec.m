@@ -24,9 +24,9 @@ classdef paramsRec
             const.kb=8.617333262e-5;% boltzmann constant in eV K-1
             const.bb=blackbody(const.T,const.Edistribution);%black body in units mA/cm^2/eV
 %             const.chemicalpot=0.9;
-            params.tickness=1e-7;%thickness of the device in m
+            params.thickness=1e-7;%thickness of the device in m
             %params.sizeofsite=5e-10;%size of the site in m ( need to define it in terms of density of states) 
-            params.Excitondesnity=1/power(5e-10,3);% in unit m^-3
+            params.exciton_density=1/power(5e-10,3);% in unit m^-3
 			params.nie=1.5;%refrective index of the medium
             params.RCTE=1;%ratio CT to S1
             %% EXciton properties          
@@ -38,8 +38,11 @@ classdef paramsRec
             params.Ex.Number_Vibronic_Mode_final=15;%number of vibronic mode considered for the ground state
             params.Ex.hW=0.15;%main vibronic energy considered in eV
             params.Ex.sigma=0.001;%gaussian distribution for CT state
+            params.Ex.disorder_cutoff = 0.2; % eV. The limit to the width of the gaussian disorder (around Eg). Regardless of sigma, all states above and below Eg+- cuttoff are 0.
+            params.Ex.disorder_sigma_scale = 2.5;  % factor to determine the width of the disordered states (sigma_scale * sigma). if this is bigger than cutoff, cutoff is used instead.
+            params.Ex.disorder_nStates=15;
             params.Ex.Dmus=3*3.33e-30/1.6e-19;%difference in static dipole moment (10 in DEbye ) then th
-            params.Ex.numbrestate=2;
+            
             %% CT properties
             params.CT.f=0.001;%oscillator strength of the CT state
             params.CT.L0=0.14;%outer reorganisation energy(low frequency) in eV
@@ -49,10 +52,13 @@ classdef paramsRec
             params.CT.Number_Vibronic_Mode_final=15;%number of vibronic mode considered for the ground state
             params.CT.hW=0.15;%main vibronic energy considered in eV
             params.CT.sigma=0.001;%gaussian distribution for CT state
+            params.CT.disorder_cutoff = 0.2; % eV. The limit to the width of the gaussian disorder (around Eg). Regardless of sigma, all states above and below Eg+- cuttoff are 0.
+            params.CT.disorder_sigma_scale = 2.5;  % factor to determine the width of the disordered states (sigma_scale * sigma). if this is bigger than cutoff, cutoff is used instead.
+            params.CT.disorder_nStates=15;
             params.CT.Dmus=10*3.33e-30/1.6e-19;%difference in static dipole moment (10 in DEbye ) then th
-            params.CT.numbrestate=2;
             %%%%%%% add this to account for the effect of Hybredisation
             params.Vstar=0.020; % Coupling between S1 and CT in eV
+            
             Prec.params=params;
             Prec.const=const;
             Prec=paramsRec.update(Prec);
@@ -72,11 +78,11 @@ classdef paramsRec
             hbarEV=const.h/const.e/2/pi	;
             
             params.S=params.Li/params.hW;%huang rhys factor
-             params.Gausswidth=5* params.sigma;
-            params.Statedistribution=linspace(params.DG0-params.Gausswidth,params.DG0+params.Gausswidth, params.numbrestate);%need to be linearly spaced
+            params.Gausswidth = min(params.disorder_cutoff, params.disorder_sigma_scale * params.sigma);  %scale the states with sigma until the cutoff is reached. 
+            params.Statedistribution=linspace(params.DG0-params.Gausswidth,params.DG0+params.Gausswidth, params.disorder_nStates);%need to be linearly spaced
             params.Znorm=0;
             params.Znormabs=0;
-            if params.numbrestate<2
+            if params.disorder_nStates<2
                 StateEnergyspacing=1;
             else
                 StateEnergyspacing=params.Statedistribution(2)-params.Statedistribution(1);
@@ -212,7 +218,7 @@ classdef paramsRec
             kth=1e14;
             
             %%%%%%%%%%%%% calculate the rates
-            if params.numbrestate<2
+            if params.disorder_nStates<2
                 StateEnergyspacing=1;
             else
                 StateEnergyspacing=params.Statedistribution(2)-params.Statedistribution(1);
@@ -255,7 +261,7 @@ classdef paramsRec
         function params=absorptionstate(params,const)
             %%%%%%%%%%%%%%%%%%%absorption spectrum%%%%%%%%%%%%%%%%%
             hbarEV=const.h/const.e/2/pi	;
-            if params.numbrestate<2
+            if params.disorder_nStates<2
                 StateEnergyspacing=1;
             else
                 StateEnergyspacing=params.Statedistribution(2)-params.Statedistribution(1);
@@ -302,16 +308,16 @@ classdef paramsRec
                         E0=E;
                     end
                     alphaLJ(wavei)=(Prec.params.Ex.results.alphaLJ(wavei0)+Prec.params.RCTE*Prec.params.CT.results.alphaLJ(wavei0))...
-                        *Prec.params.nie*Prec.params.Excitondesnity*sqrt((E-Prec.params.Ex.DG0)/Prec.const.kb/Prec.const.T)/sqrt((E0-Prec.params.Ex.DG0)/Prec.const.kb/Prec.const.T);
+                        *Prec.params.nie*Prec.params.exciton_density*sqrt((E-Prec.params.Ex.DG0)/Prec.const.kb/Prec.const.T)/sqrt((E0-Prec.params.Ex.DG0)/Prec.const.kb/Prec.const.T);
                 else
                     alphaLJ(wavei)=(Prec.params.Ex.results.alphaLJ(wavei)+Prec.params.RCTE*Prec.params.CT.results.alphaLJ(wavei))...
-                        *Prec.params.nie*Prec.params.Excitondesnity;                       
+                        *Prec.params.nie*Prec.params.exciton_density;                       
                 end
             end
             %%%%%%%%%%%%%absorption
             int=1;
             for E=Einterp
-                AbsLJ(int) = 1-exp(-2*Prec.params.tickness*alphaLJ(int));
+                AbsLJ(int) = 1-exp(-2*Prec.params.thickness*alphaLJ(int));
                 int=int+1;
             end
             %%%%%%%%%%%%JSC rad%%%%%%%%%%%%%%%%%%%%%%
@@ -319,7 +325,7 @@ classdef paramsRec
             solarphlux           = interp1(Prec.const.solflux(:,1),Prec.const.solflux(:,2),Einterp);
             Jscrad               = trapz(Einterp, AbsLJ   .* solarphlux);
             J0rad                = trapz(Einterp, AbsLJ   .* bbinterp);
-            integralRadRec       = trapz(Einterp, alphaLJ .* bbinterp * 4 * Prec.params.tickness * Prec.params.nie^2);
+            integralRadRec       = trapz(Einterp, alphaLJ .* bbinterp * 4 * Prec.params.thickness * Prec.params.nie^2);
             radiativeEmission    = alphaLJ .* bbinterp * 4 * Prec.params.nie^2 * 1e-2;
             Prec.results.R0rad   = trapz(Einterp, radiativeEmission);% here R0rad is in cm-3%Epsilon,out isconsidered ot be equal to pi according to equation 23 in 10.1103/PhysRevB.90.035211  %radiative emission rate based on black body radiation
             Prec.results.Jscrad  = Jscrad;

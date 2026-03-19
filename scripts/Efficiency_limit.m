@@ -2,15 +2,15 @@
 
 Prec                        = paramsRec;                    % initiliase the recombination parameters (default values)
 % fixed model parameters for the efficiency limit exploration
-Prec.params.tickness        = 100 * 1e-9;
+Prec.params.thickness        = 100 * 1e-9;
 Prec.params.Ex.f            = 3;Prec.params.CT.f            = 1e-2;
 Prec.params.Ex.sigma        = 0.0001;Prec.params.CT.sigma        = 0.0001;
-Prec.params.Ex.numbrestate  = 15;Prec.params.CT.numbrestate  = 15;
+Prec.params.Ex.disorder_nStates  = 15;Prec.params.CT.disorder_nStates  = 15;
 Prec.params.Ex.L0           = 0.10;  Prec.params.CT.L0           = 0.1;
 Prec.params.Ex.Li           = 0.1;   Prec.params.CT.Li           = 0.1;   %0.15
 Prec.params.Vstar           = 0.000;
 %state density parameter
-Prec.params.Excitondesnity  = 8e27; %in m-3
+Prec.params.exciton_density  = 8e27; %in m-3
 Prec.params.RCTE            = 0.1;
 Prec.const.Edistribution=0.5:0.005:3;%the energy distribution for the absorption spectra%need to be linearly spaced
 
@@ -29,7 +29,7 @@ DP = deviceparams(['parameters\',deviceParameterFile]);
 activelayer = 2;
 DP.light_properties.OM      = 0; %to consider the transfer matrix generation profile
 DP.Time_properties.tpoints  = 100;
-DP.Layers{activelayer}.tp   = Prec.params.tickness * 100; % [cm] = [m] * 100
+DP.Layers{activelayer}.tp   = Prec.params.thickness * 100; % [cm] = [m] * 100
 % Active Layer Index                % integer
 NC          = 5e19;    %set to the same degeneracy as the CT state
 mobility    = 1e-3;     % Charge Carrier Mobility           % cm^2 / V / s
@@ -100,7 +100,7 @@ for Li=0.15%0.06:0.01:0.1
             kr_CT=Prec.params.CT.results.krTot;knr_CT=Prec.params.CT.results.knr;
             kr_LE=Prec.params.Ex.results.krTot;knr_LE=Prec.params.Ex.results.knr;
             E_LE=Prec.params.Ex.DG0; E_CT=Prec.params.CT.DG0;
-            Nc=NC;N_LE=Prec.params.Excitondesnity*1e-6;N_CT=Prec.params.Excitondesnity*1e-6*Prec.params.RCTE ;
+            Nc=NC;N_LE=Prec.params.exciton_density*1e-6;N_CT=Prec.params.exciton_density*1e-6*Prec.params.RCTE ;
             %tableres=[tableres;table(E_LE,E_CT,ECS,kdis_CT,kdis_LE,Bfor,Jsc_rad,Voc_rad,Dvnr,kr_CT,knr_CT,kr_LE,knr_LE,Jsc,Voc,FF,PCE)];
             tableres=[tableres;table(E_LE,E_CT,ECS,kdis_CT,kdis_LE,Bfor,Jsc_rad,Voc_rad,Dvnr,kr_CT,knr_CT,kr_LE,knr_LE,FFrad,J0rad,PCErad,FFnrad,PCEnrad,Jsc,Voc,FF,PCE)];%,Jsc,Voc,FF,PCE)];
             

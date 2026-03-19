@@ -159,11 +159,10 @@ classdef deviceparams
             % Readlayers takes a deviceparams object and the filename of an
             % excel sheet as input. It saves all the layer properties to
             % the deviceparams and gives the updated object as output. 
-
-            delimiterIn = ',';
-            headerlinesIn = 0;
-            data = importdata(filename,delimiterIn,headerlinesIn);
-            DP.layers_num=length(data.data(:,1));
+            
+            data_matrix = readmatrix(filename);
+            DP.layers_num = size(data_matrix, 1);
+            data.data = data_matrix;
             epp0 = 552434;        % e^2 eV^-1 cm^-1 -Checked (02-11-15)
             for ii=1:1:DP.layers_num
                 DP.Layers{ii}.epp=data.data(ii,1)*epp0; % Dielectric constant
@@ -355,7 +354,7 @@ classdef deviceparams
             %             DP=pnParamsHCT;
             %input parameters
             DP.physical_const.T=Prec.const.T;
-            tickness=DP.Layers{activelayer}.tp;%in cm
+            thickness=DP.Layers{activelayer}.tp;%in cm
             kbT=DP.physical_const.kB*DP.physical_const.T;%in eV
             q=DP.physical_const.e;
             offsetLECT=Prec.params.Ex.DG0-Prec.params.CT.DG0;
@@ -366,7 +365,7 @@ classdef deviceparams
             
             DP.results.CT0 = CT0;
             %%%%%%%%%%%%estimated value
-            %             ECS=Vocexp./idealityfactor+kbT*log(Beff_ref*(Tq1exp_ref./Tq1exp).^2)-kbT*log(idealityfactor.*Jsc./NC^2/tickness/q/1e3);%in eV
+            %             ECS=Vocexp./idealityfactor+kbT*log(Beff_ref*(Tq1exp_ref./Tq1exp).^2)-kbT*log(idealityfactor.*Jsc./NC^2/thickness/q/1e3);%in eV
             %in cm-3s-1
             try
                 switch  varargin{2}
@@ -448,11 +447,11 @@ classdef deviceparams
                 DP = Xgrid(DP);
                 DP=update_time(DP);
                 DP=Timemesh(DP);
-                DP.results.J0 = CT0*tickness*q*1e3 * (Prec.params.CT.results.knr + (Prec.params.Ex.results.knr) * exp(-offsetLECT/kbT) / Prec.params.RCTE) + Prec.results.J0rad;
+                DP.results.J0 = CT0*thickness*q*1e3 * (Prec.params.CT.results.knr + (Prec.params.Ex.results.knr) * exp(-offsetLECT/kbT) / Prec.params.RCTE) + Prec.results.J0rad;
                 DP.results.DVnr = -kbT*log(Prec.results.J0rad / DP.results.J0);
                 DP.results.Voc = Prec.results.Vocrad - DP.results.DVnr;
                 DP.results.Vocrad=Prec.results.Vocrad;
-                DP.light_properties.Genstrength  =Prec.results.Jscrad/tickness/q/1e3;%for uniform generation in cm-3 one sun equivalent
+                DP.light_properties.Genstrength  =Prec.results.Jscrad/thickness/q/1e3;%for uniform generation in cm-3 one sun equivalent
                 if DP.light_properties.OM == 2
                     DP=Transfer_matrix_generation_profile(DP);
                 end
@@ -473,8 +472,8 @@ classdef deviceparams
             name='PBDB-T_ITIC';
             activelayer=2;
             Lightintensity=DP.light_properties.Int;
-            tickness=DP.Layers{activelayer}.tp*1e7;%in nm
-            [Xpos,Gx]=TransferMatrix_generation(tickness,name,Lightintensity);
+            thickness=DP.Layers{activelayer}.tp*1e7;%in nm
+            [Xpos,Gx]=TransferMatrix_generation(thickness,name,Lightintensity);
             
             DP.light_properties.Gensprofile_pos=Xpos*1e-7+DP.Layers{activelayer}.XL;
             DP.light_properties.Gensprofile_signal=Gx;

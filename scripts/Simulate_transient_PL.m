@@ -2,7 +2,7 @@ addpath(genpath(pwd)); % add folders to path
 
 Prec                        = paramsRec;                    % initiliase the recombination parameters (default values)
 offset                      = 0.25;                  % eV    % energy difference between the excited state and the CT state
-Prec.params.tickness        = 10 * 1e-9;           % m     % thickness of the active layer
+Prec.params.thickness        = 10 * 1e-9;           % m     % thickness of the active layer
 Prec.params.Ex.DG0          = 1.36; % [0.8,2.5 ] energy of the Ex state                
 Prec.params.CT.DG0          = Prec.params.Ex.DG0 - offset; % energy of the CT state
 Prec.params.Ex.f            = 2.56; % [1e-1, 10]%controls the strength of the optical transition from the Ex to ground

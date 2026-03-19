@@ -1,4 +1,4 @@
-% AL_thickness=200*1e-7;%active layer tickness
+% AL_thickness=200*1e-7;%active layer thickness
 
 %% First Calculate the Recombination paramters of the CT and Exciton
 %here we also calculate the absorption profile of the device and the
@@ -12,20 +12,20 @@ Prec=paramsRec;%first initiliase the recombination parameters ( the parameters a
 Prec.params.Ex.DG0=1.63;
 Prec.params.CT.f=5e-2;
 offset=0.2;
-Prec.params.tickness=AL_thickness*1e-2;%in m
+Prec.params.thickness=AL_thickness*1e-2;%in m
 Prec.params.CT.DG0=Prec.params.Ex.DG0-offset;
 Prec.params.RCTE=1e-4;
 Prec.params.Ex.Li=0.15;
 Prec.params.CT.Li=0.15;
 Prec.params.CT.L0=0.18;
 Prec.params.Ex.f=5;
-Prec.params.Excitondesnity=1e28;
+Prec.params.exciton_density=1e28;
 Prec.params.Vstar=0.001;
 Prec.const.T=300;
 Prec.params.CT.sigma=0.04;
 Prec.params.Ex.sigma=0.02;
-Prec.params.Ex.numbrestate=1;
-Prec.params.CT.numbrestate=1;
+Prec.params.Ex.disorder_nStates=1;
+Prec.params.CT.disorder_nStates=1;
 Prec=paramsRec.calcall(Prec);%this line calculated the different properties of the states.
 krecCT=Prec.params.CT.results.knr;krecex=Prec.params.Ex.results.knr;
 Voc=Prec.results.Vocrad-Prec.results.Dvnr;
