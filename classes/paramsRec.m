@@ -38,8 +38,11 @@ classdef paramsRec
             params.Ex.Number_Vibronic_Mode_final=15;%number of vibronic mode considered for the ground state
             params.Ex.hW=0.15;%main vibronic energy considered in eV
             params.Ex.sigma=0.001;%gaussian distribution for CT state
+            params.Ex.disorder_cutoff = 0.2; % eV. The limit to the width of the gaussian disorder (around Eg). Regardless of sigma, all states above and below Eg+- cuttoff are 0.
+            params.Ex.disorder_sigma_scale = 2.5;  % factor to determine the width of the disordered states (sigma_scale * sigma). if this is bigger than cutoff, cutoff is used instead.
+            params.Ex.numbrestate=15;
             params.Ex.Dmus=3*3.33e-30/1.6e-19;%difference in static dipole moment (10 in DEbye ) then th
-            params.Ex.numbrestate=2;
+            
             %% CT properties
             params.CT.f=0.001;%oscillator strength of the CT state
             params.CT.L0=0.14;%outer reorganisation energy(low frequency) in eV
@@ -49,10 +52,13 @@ classdef paramsRec
             params.CT.Number_Vibronic_Mode_final=15;%number of vibronic mode considered for the ground state
             params.CT.hW=0.15;%main vibronic energy considered in eV
             params.CT.sigma=0.001;%gaussian distribution for CT state
+            params.CT.disorder_cutoff = 0.2; % eV. The limit to the width of the gaussian disorder (around Eg). Regardless of sigma, all states above and below Eg+- cuttoff are 0.
+            params.CT.disorder_sigma_scale = 2.5;  % factor to determine the width of the disordered states (sigma_scale * sigma). if this is bigger than cutoff, cutoff is used instead.
+            params.CT.numbrestate=15;
             params.CT.Dmus=10*3.33e-30/1.6e-19;%difference in static dipole moment (10 in DEbye ) then th
-            params.CT.numbrestate=2;
             %%%%%%% add this to account for the effect of Hybredisation
             params.Vstar=0.020; % Coupling between S1 and CT in eV
+            
             Prec.params=params;
             Prec.const=const;
             Prec=paramsRec.update(Prec);
@@ -72,7 +78,7 @@ classdef paramsRec
             hbarEV=const.h/const.e/2/pi	;
             
             params.S=params.Li/params.hW;%huang rhys factor
-             params.Gausswidth=5* params.sigma;
+            params.Gausswidth = min(params.disorder_cutoff, params.disorder_sigma_scale * params.sigma);  %scale the states with sigma until the cutoff is reached. 
             params.Statedistribution=linspace(params.DG0-params.Gausswidth,params.DG0+params.Gausswidth, params.numbrestate);%need to be linearly spaced
             params.Znorm=0;
             params.Znormabs=0;
