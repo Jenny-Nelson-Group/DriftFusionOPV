@@ -45,7 +45,7 @@ classdef device
             end
             p.light_properties.Int=Gen;%multiplied by Params.Genstrength
             p.Time_properties.tmesh_type = 2;
-            p.Time_properties.tpoints = 1000;
+            p.Time_properties.tpoints = 500;
             p=update_time(p);
             p=Timemesh(p);
             if p.light_properties.OM == 2
