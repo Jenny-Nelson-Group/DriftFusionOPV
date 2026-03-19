@@ -1069,8 +1069,8 @@ classdef dfplot
                 %norm_PL = max(krE);
                 norm_PL = 4e14;
                 tableres(end+1)=max(krE);
-                xxx = DV.Prec.const.Edistribution;
-                %xxx = 1240./DV.Prec.const.Edistribution;
+                %xxx = DV.Prec.const.Edistribution;
+                xxx = 1240./DV.Prec.const.Edistribution;
                 semilogy(xxx,krE/norm_PL,'DisplayName',"Total",'Color','red','LineWidth',2)
                 
                 hold on

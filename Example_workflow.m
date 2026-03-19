@@ -8,58 +8,55 @@
 addpath(genpath(pwd));  
 
 % open figure
-% handle = findobj(allchild(groot), 'flat', 'type', 'figure', 'number', 1);
-% if isempty(handle)
-%     open(pwd + "\Example_Data.fig")
-% end
-
-%%
-for i = 1:length(figure(fignumber).Children)
-    set(figure(fignumber).Children(i).Children, {'color'}, num2cell(bone2,2));
+handle = findobj(allchild(groot), 'flat', 'type', 'figure', 'number', 1);
+if isempty(handle)
+    open(pwd + "\Example_Data.fig")
 end
 
-%%
-for i = 1:length(gcf().Children)
-    set(gcf().Children(i).Children, {'color'}, num2cell(flipud(jet(11)),2));
-end
 
 %% SET PARAMETERS and make Device
+disp("---new---")
 Prec                        = paramsRec;                    % initiliase the recombination parameters (default values)
-offset                      = 0.01;                 % eV    % energy difference between the excited state and the CT state
+offset                      = 0.20;                  % eV    % energy difference between the excited state and the CT state
 Prec.params.tickness        = 100 * 1e-9;           % m     % thickness of the active layer
 Prec.params.Ex.DG0          = 1.35;                 
 Prec.params.CT.DG0          = Prec.params.Ex.DG0 - offset;
-Prec.params.Ex.f            = 2;
-Prec.params.CT.f            = 1e-10;
-Prec.params.Ex.sigma        = 0.1;
-Prec.params.CT.sigma        = 0.01;
-Prec.params.Ex.numbrestate  = 5;
-Prec.params.CT.numbrestate  = 5;
-Prec.params.Ex.L0           = 0.10;  %0.10
-Prec.params.Ex.Li           = 0.05;   %0.15   %0.04-0.150
-Prec.params.CT.L0           = 0.07;   %0.18   %CT smoothing 
-Prec.params.CT.Li           = 0.1;    %0.15
-Prec.params.RCTE            = 1;  
+Prec.params.Ex.f            = 2.56;
+Prec.params.CT.f            = 1e-4;
+Prec.params.Ex.sigma        = 0.001;
+Prec.params.CT.sigma        = 0.001;
+Prec.params.Ex.numbrestate  = 21;
+Prec.params.CT.numbrestate  = 21;
+Prec.params.Ex.L0           = 0.07; %0.10
+Prec.params.Ex.Li           = 0.07; %0.15   %0.04-0.150
+Prec.params.CT.L0           = 0.07; %0.18  %CT smoothing
+Prec.params.CT.Li           = 0.07; %0.15
+Prec.params.RCTE            = 2;  
 Prec.params.Excitondesnity  = 3e27;
 Prec.params.Vstar           = 0.0; % hybridisation: on: 0.01 /0.02 coupling between CT and ex
-Prec.const.T                = 100;
+Prec.const.T                = 300;
 Prec                        = paramsRec.calcall(Prec); % Update the Recombination Parameters
+
 
 krecCT    = Prec.params.CT.results.knr  +  Prec.params.CT.results.krTot;
 krecex    = Prec.params.Ex.results.knr  +  Prec.params.Ex.results.krTot;
+alphaLJ   = Prec.results.alphaLJ  +  Prec.results.alphaLJ;
 Voc_Prec  = Prec.results.Vocrad - Prec.results.Dvnr;
 
-figure(5)
-DP.simulate_PL(Prec,5);
+abso = sum(alphaLJ);
 
+disp("CT:  krtot: " + Prec.params.CT.results.krTot + ", knr: " + Prec.params.CT.results.knr); 
+disp("LE:  krtot: " +Prec.params.Ex.results.krTot+ ", knr: " +Prec.params.Ex.results.knr); 
+disp("abs: " + abso); 
 % Generate a device with the defined parameters
+
 %% Parameters are from Prec which is defined above and from the PINDevice file, which is loaded below
 
 activelayer = 2;        % Active Layer Index                % integer
-NC          = 1e18;     % Number of Charge Carriers         % cm^-3
+NC          = 1e18;     % DOS Conduction band               % cm^-3
 Bfor        = 5e-11;    % Rate Constant CS to CT            % cm^3 / s
-kdisEx      = 1e10;      % Rate Constatn Ex dissociation     % 1 / s
-kdisCT      = 5e7;    % Rate Constant CT dissociation     % 1 / s
+kdisEx      = 3e10;      % Rate Constatn Ex dissociation     % 1 / s
+kdisCT      = 1.5e9;    % Rate Constant CT dissociation     % 1 / s
 mobility    = 9e-5;     % Charge Carrier Mobility           % cm^2 / V / s
 Rshunt      = 10^5;     % ohm cm2 (?)
 
@@ -81,11 +78,28 @@ DP.External_prop.sn_l       = sn;  %left Electron extraction/surface recombinati
 DP.External_prop.sn_r       = sn;  %right Electron extraction/surface recombination coefficient in cm s^-1
 DP.External_prop.sp_l       = sn;  %left hole extraction/surface recombination coefficient in cm s^-1
 DP.External_prop.sp_r       = sn;  %right hole extraction/surface recombination coefficient in cm s^-1 
-DP.physical_const.T         = Prec.const.T;
 
 DP = DP.generateDeviceparams(NC, activelayer, mobility, kdisCT, kdisEx, Prec, Bfor, 0);
 clear activelayer Tq1exp mobility kdis kdisex
 
+% SIMULATION 0D model
+% kforr=DP.Layers{2}.kfor;
+fignumber = 1;
+%DP.simulate_PL(Prec,fignumber);
+%DP.simulate_EL(Prec,fignumber);
+%DP.simulateTAS(2e10,1e27,fignumber);
+
+% plot EQE from Prec
+figure(fignumber)
+subplot(2,2,1)
+semilogy(Prec.const.Edistribution, Prec.results.AbsLJ,'LineWidth',2,'Color',[1,0,0]); hold on
+xlabel('Energy [eV]')
+ylabel('EQE [a.u]')
+ylim([1*1e-7, 1.5])
+xlim([1,2])
+sgtitle(['Vocrad= ' num2str(DP.results.Vocrad) ' DVnr= ' num2str(DP.results.DVnr) ' Voc= ' num2str(DP.results.Voc)])
+
+pause(0.1) % give the figure time to finish
 
 %% Run the JV scans here
 Vstart  = 0;
@@ -109,53 +123,30 @@ for Gen = suns
     toc
 end
     
-%% PLOTTING
-fignumber = 1;
-
-% Plot JV
+%% Plot JV
 figure(fignumber)
-subplot(2,3,1)
+subplot(2,2,4)
+%dfplot.JV_new(DV2.sol_JV(2),1)
+hold on
 [Jsc,Voc,FF,JJ,VV] = dfplot.JV_new(DV2.sol_JV(end),1,Rshunt);
-xlim([-0, 1]);
-box on
+%title("Jsc ="+Jsc+", FF = "+FF+", Voc = "+Voc)
+hold on
+%plot([0,1],[0,0]);
+xlim([-0., 1]);
 
-% plot EQE from Prec
+%% Plot Photoluminescence (from full simulation)
 figure(fignumber)
-subplot(2,3,4)
-semilogy(Prec.const.Edistribution, Prec.results.AbsLJ,'LineWidth',2,'Color',[1,0,0]); hold on
-xlabel('Energy (eV)')
-ylabel('EQE')
-ylim([1*1e-7, 1.5])
-xlim([0.5,2])
-%sgtitle(['Vocrad= ' num2str(DP.results.Vocrad) ' DVnr= ' num2str(DP.results.DVnr) ' Voc= ' num2str(DP.results.Voc)])
-box on
-
-% Plot Photoluminescence (from full simulation)
-figure(fignumber)
-subplot(2,3,2)
+subplot(2,2,2)
 hold on
 dfplot.photoluminescence(DV2,2,0,1);
-xlim([0.5,2]);
+xlim([800,1400]);
 ylim([1e-1,1e3]);
-set(gca,'YScale','log')
-legend off
-box on
 
-%DP.simulate_PL(Prec,fignumber);
-
-% Plot EL
+%% Plot EL
 figure(fignumber)
-subplot(2,3,5)
+subplot(2,2,3)
 DP.simulate_EL(Prec,fignumber);
-
-% PLOT TAS
-subplot(2,3,3)
-DP.simulateTAS(2e10,1e27,fignumber);
-xlabel("Time")
-ylabel("TAS")
-legend off
-
-
+    
 %% Output Values
 kbT = DP.physical_const.kB*300;
 CT0 = DP.results.CT0;

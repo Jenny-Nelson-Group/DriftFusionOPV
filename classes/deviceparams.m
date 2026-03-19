@@ -528,17 +528,19 @@ classdef deviceparams
             CTsum=y(end,3);
             Exsum=y(end,4);
             
-            krE=Prec.params.CT.results.krE*CTsum+Prec.params.Ex.results.krE*Exsum;
             normalisation = 1;
             %normalisation = max(krE);
-            semilogy(Prec.const.Edistribution,krE/normalisation,'DisplayName',"Total",'Color',[1,0,0],'LineWidth',2)
-            hold on
-            %semilogy(Prec.const.Edistribution,Prec.params.CT.results.krE*CTsum/max(krE),'--','DisplayName',"CT contribution",'Color',[1, 0.66, 0.59])
-            %semilogy(Prec.const.Edistribution,Prec.params.Ex.results.krE*Exsum/max(krE),'DisplayName',"Ex contribution",'Color',[1, 0.66, 0.59])
+
+            krE=Prec.params.CT.results.krE*CTsum+Prec.params.Ex.results.krE*Exsum;
             X=(Prec.const.Edistribution)';
             Y=(krE/normalisation)';
             Z=(Prec.params.CT.results.krE*CTsum/normalisation)';
             
+            % plotting 
+            semilogy(Prec.const.Edistribution, Y, 'DisplayName', "Total",'Color',[1,0,0],'LineWidth',2); hold on;
+            %semilogy(Prec.const.Edistribution,Prec.params.CT.results.krE*CTsum/max(krE),'--','DisplayName',"CT contribution",'Color',[1, 0.66, 0.59])
+            %semilogy(Prec.const.Edistribution,Prec.params.Ex.results.krE*Exsum/max(krE),'DisplayName',"Ex contribution",'Color',[1, 0.66, 0.59])
+
             xlabel('Energy (eV)')
             ylabel('Electroluminescence  (a.u)')
             %ylim([1*1e-4, 1])
@@ -546,6 +548,7 @@ classdef deviceparams
             %legend
             
         end
+
         function [X,Y,Z]=simulate_EL_notnorm(DP,Prec,label)
             [t,y]=solveKineticmodel(DP,0,1e20);
             CTsum=y(end,3);
