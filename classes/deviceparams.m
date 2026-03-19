@@ -159,11 +159,10 @@ classdef deviceparams
             % Readlayers takes a deviceparams object and the filename of an
             % excel sheet as input. It saves all the layer properties to
             % the deviceparams and gives the updated object as output. 
-
-            delimiterIn = ',';
-            headerlinesIn = 0;
-            data = importdata(filename,delimiterIn,headerlinesIn);
-            DP.layers_num=length(data.data(:,1));
+            
+            data_matrix = readmatrix(filename);
+            DP.layers_num = size(data_matrix, 1);
+            data.data = data_matrix;
             epp0 = 552434;        % e^2 eV^-1 cm^-1 -Checked (02-11-15)
             for ii=1:1:DP.layers_num
                 DP.Layers{ii}.epp=data.data(ii,1)*epp0; % Dielectric constant
