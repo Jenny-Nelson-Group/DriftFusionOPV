@@ -1,4 +1,4 @@
-function [all_cell_configs, DP_table, Split_choice] = optimise_slices_single_config(n_cells, sliceDatabase)
+function [all_cell_configs, DP_table, Split_choice] = optimise_slices(n_cells, sliceDatabase)
     % OPTIMISE_SLICES Find the optimal spectral splitting for multi-junction cells.
     % Uses Dynamic Programming to find the maximum power for 1 to N sections.
     %
