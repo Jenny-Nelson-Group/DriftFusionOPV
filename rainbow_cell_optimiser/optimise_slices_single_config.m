@@ -4,8 +4,9 @@ function [all_cell_configs, DP_table, Split_choice] = optimise_slices_single_con
     %
     % INPUTS:
     %   n_cells       - (Integer) Maximum number of sections/junctions to solve for.
-    %   sliceDatabase - (3D Struct) Dimensions [gaps x start_lam x end_lam].
-    %                   Must contain field .Pmax (max power for that gap/slice).
+    %   sliceDatabase - (3D Struct) Dimensions [gaps x start_lam x end_lam] or
+    %                   (4D Struct) Dimensions [gaps x start_lam x end_lam x materials]
+    %                   Must contain field .Pmax, .gap, .l_min, .l_max, .Voc, .Jsc
     %
     % OUTPUTS:
     %   all_configs   - (1xN Cell) Optimal configuration for each total section count.
@@ -19,11 +20,10 @@ function [all_cell_configs, DP_table, Split_choice] = optimise_slices_single_con
     %   disp(results{3}.total_power); % Power for the 3-junction solution
     
     %% 0. Validate input format
-    [~, num_lambdas, ~] = size(sliceDatabase);
+    [num_gaps, num_lambdas, ~, num_materials] = size(sliceDatabase);
 
     if n_cells >= num_lambdas
-        error('n_cells (%d) must be less than num_lambdas (%d). Decrease n_cells or increase spectral resolution.', ...
-              n_cells, num_lambdas);
+        error('n_cells (%d) must be less than num_lambdas (%d).', n_cells, num_lambdas);
     end
 
     %% 1. Pre-Extract Power Matrix
@@ -32,14 +32,21 @@ function [all_cell_configs, DP_table, Split_choice] = optimise_slices_single_con
 
     P_slice = zeros(num_lambdas, num_lambdas);
     Gap_slice = zeros(num_lambdas, num_lambdas);
+    Material_slice = zeros(num_lambdas, num_lambdas);
     
     % Find the optimal gap for each slice
     for i = 1:num_lambdas-1
         for j = i+1:num_lambdas
-            slice_powers = [sliceDatabase(:, i, j).Pmax];
-            [max_p, best_g] = max(slice_powers);
+            slice_powers_block = [sliceDatabase(:, i, j, :).Pmax];
+            slice_powers_matrix = reshape(slice_powers_block, num_gaps, num_materials);
+            
+            % Find global maximum in the Gap vs Material grid
+            [max_p, linear_idx] = max(slice_powers_matrix(:));
+            [best_g, best_m] = ind2sub(size(slice_powers_matrix), linear_idx);
+
             P_slice(i, j) = max_p;
             Gap_slice(i, j) = best_g;
+            Material_slice(i, j) = best_m;
         end
     end
 
@@ -93,9 +100,12 @@ function [all_cell_configs, DP_table, Split_choice] = optimise_slices_single_con
             
             % Identify and pull the exact pre-calculated entry
             g_idx = Gap_slice(current_idx, next_idx);
-            best_entry = sliceDatabase(g_idx, current_idx, next_idx);
+            m_idx = Material_slice(current_idx, next_idx);
+
+            best_entry = sliceDatabase(g_idx, current_idx, next_idx, m_idx);
             
             % Assign values directly (No pre-allocation of zeros needed)
+            cell_config.material_idx(step)        = m_idx;
             cell_config.gaps(step)                = best_entry.gap;
             cell_config.split_wavelengths(step)   = best_entry.l_min;
             cell_config.split_wavelengths(step+1) = best_entry.l_max; % Overwrites l_min of next cell with l_max of current
@@ -104,7 +114,7 @@ function [all_cell_configs, DP_table, Split_choice] = optimise_slices_single_con
             cell_config.section_Jsc(step)         = best_entry.Jsc;
             cell_config.section_gen_abs(step)     = best_entry.gen_abs;
             cell_config.section_gen_frac(step)    = best_entry.gen_frac;
-            
+           
             current_idx = next_idx;
         end
         all_cell_configs{n_total} = cell_config;
