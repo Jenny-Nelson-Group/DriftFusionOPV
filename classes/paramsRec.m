@@ -8,19 +8,20 @@ classdef paramsRec
         function Prec=paramsRec
 %             const.V=30;
             const.kb=8.6173324e-5;
-            const.me=9.1e-31;% electron mass in kg
-            const.h=6.62e-34;% planck constant in Joule
-            const.e=1.6e-19;% elementary charge
+            const.me=9.1093837e-31;% electron mass in kg
+            const.h=6.62606957e-34;% planck constant in Joule
+            const.e=1.602176565e-19;% elementary charge
             const.T=300;% Temperature of the system
             const.Edistribution=0.5:0.005:3;%the energy distribution for the absorption spectra%need to be linearly spaced
-            const.c=300e6;%speed of light in vaccum in ms-1
-            const.eps0=4*pi*8.85e-12*6.242e+18;%vaccum permetivity in eV.m-1*4pi
+            const.c=299792458;%speed of light in vaccum in ms-1
+            const.eps0=4*pi*8.854e-12/const.e;%vaccum permetivity in eV.m-1*4pi
+            %const.eps0=4*pi*8.854e-12*6.242e+18;%vaccum permetivity in eV.m-1*4pi
             data = load('spectrum.mat'); % in ./Data
             const.solflux(:,1) = data.E;
             const.solflux(:,2) = data.photonFlux;% photonFlux has units mA/cm^2/eV 
             % phflux = interp1( data.E,photonFlux,Energy);
             % [~,const.solflux] = ShockleyQueisser(1);%used to get the sun spectrum
-            const.kb=8.6173324e-5;% boltzmann constant in eV K-1
+            const.kb=8.617333262e-5;% boltzmann constant in eV K-1
             const.bb=blackbody(const.T,const.Edistribution);%black body in units mA/cm^2/eV
 %             const.chemicalpot=0.9;
             params.tickness=1e-7;%thickness of the device in m
@@ -78,10 +79,10 @@ classdef paramsRec
             if params.numbrestate<2
                 StateEnergyspacing=1;
             else
-            StateEnergyspacing=params.Statedistribution(2)-params.Statedistribution(1);
+                StateEnergyspacing=params.Statedistribution(2)-params.Statedistribution(1);
             end
             try
-                if min(size(params.funlaguerre)==[params.Number_Vibronic_Mode_final+1,params.Number_Vibronic_Mode_initial+1])
+                if min(    size(params.funlaguerre)==[params.Number_Vibronic_Mode_final+1,params.Number_Vibronic_Mode_initial+1]  )
                     
                 else
                     params=paramsRec.updatelaguerre(params,const);
@@ -91,10 +92,12 @@ classdef paramsRec
                 
             end
             for energy=params.Statedistribution
-                params.Znorm=params.Znorm+exp(-(energy-params.DG0)^2/2/params.sigma^2)*exp(-(energy)/const.T/const.kb)*StateEnergyspacing;
-                params.Znormabs=params.Znormabs+exp(-(energy-params.DG0)^2/2/params.sigma^2)*StateEnergyspacing;
+                params.Znorm=params.Znorm        +exp(-(energy-params.DG0)^2/2/params.sigma^2) * StateEnergyspacing * exp(-(energy)/const.T/const.kb);
+                params.Znormabs=params.Znormabs  +exp(-(energy-params.DG0)^2/2/params.sigma^2) * StateEnergyspacing;
             end
+
             params.Dmu=sqrt(3/2*const.h*params.f/const.me/(params.DG0-params.hW)*hbarEV/2/pi);
+
         end
         function Prec=update(Prec)
             params=Prec.params;
@@ -159,7 +162,8 @@ classdef paramsRec
                     for n=0:1:params.Number_Vibronic_Mode_initial
                         params0=params;
                         params0.DG0=energy;
-                        FCWD0(istate)=paramsRec.FC_em(params0,const,0,m,n,laguerrecalc)/sqrt(4*pi*params.L0*const.kb*const.T)*exp(-(energy)/(const.kb*const.T))/params.Znorm+ FCWD0(istate);
+                        %disp("Znorm: "+params.Znorm)
+                        FCWD0(istate)= FCWD0(istate) + paramsRec.FC_em(params0,const,0,m,n,laguerrecalc)/sqrt(4*pi*params.L0*const.kb*const.T)*exp(-(energy)/(const.kb*const.T))/params.Znorm; %!!!
                         
                     end
                 end
@@ -172,7 +176,7 @@ classdef paramsRec
                         for n=0:1:min(params.Number_Vibronic_Mode_final,params.Number_Vibronic_Mode_initial)
                             paramsem=params;
                             paramsem.DG0=energy;
-                            FCWDEm(istate,wavei)=FCWDEm(istate,wavei)+paramsRec.FC_em(paramsem,const,E,m,n,laguerrecalc)/sqrt(4*pi*params.L0*const.kb*const.T)*exp(-(energy)/(const.kb*const.T))/params.Znorm;
+                            FCWDEm(istate,wavei)=FCWDEm(istate,wavei)+paramsRec.FC_em(paramsem,const,E,m,n,laguerrecalc)/sqrt(4*pi*params.L0*const.kb*const.T)*exp(-(energy)/(const.kb*const.T))/params.Znorm; %!!!!!
                             FCWDabs(istate,wavei)=FCWDabs(istate,wavei)+paramsRec.FC_abs(paramsem,const,E,n,m,laguerrecalc)/sqrt(4*pi*params.L0*const.kb*const.T);
                             
                         end
@@ -204,6 +208,7 @@ classdef paramsRec
         function params=Calcrate(params,const)
             
             hbarEV=const.h/const.e/2/pi	;
+            %disp("hbareV: "+hbarEV)
             kth=1e14;
             
             %%%%%%%%%%%%% calculate the rates
@@ -218,8 +223,12 @@ classdef paramsRec
             knr=0;
             for energy=params.Statedistribution
                 istate=istate+1;
-                knr=knr+params.results.FCWD0(istate)*2*pi/hbarEV*results.Hab^2*StateEnergyspacing*exp(-(energy-params.DG0)^2/2/params.sigma^2);
+                term = params.results.FCWD0(istate)*2*pi/hbarEV*results.Hab^2*StateEnergyspacing*exp(-(energy-params.DG0)^2/2/params.sigma^2);
+                knr=knr+term;
+                term_x = params.results.FCWD0(istate);  %!!!
+                %disp("fcwd0: "+term_x)
             end
+
             kr=0;
             wavei=0;
             for E=const.Edistribution
@@ -235,6 +244,9 @@ classdef paramsRec
             
             params.results.knr=knr*kth/(knr+kth);
             params.results.Hab=params.Dmu*(params.DG0)/sqrt(power(params.Dmus,2)+4*power(params.Dmu,2));
+            %disp("Dmu: " + params.Dmu)
+            %disp("Dmus: " +params.Dmus)
+            %disp("Hab: " + params.results.Hab)
             params.results.krTot=kr;
             params.results.krE=krE;
             

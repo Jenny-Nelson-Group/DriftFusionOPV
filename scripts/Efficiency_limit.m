@@ -5,7 +5,7 @@ Prec                        = paramsRec;                    % initiliase the rec
 Prec.params.tickness        = 100 * 1e-9;
 Prec.params.Ex.f            = 3;Prec.params.CT.f            = 1e-2;
 Prec.params.Ex.sigma        = 0.0001;Prec.params.CT.sigma        = 0.0001;
-Prec.params.Ex.numbrestate  = 1;Prec.params.CT.numbrestate  = 1;
+Prec.params.Ex.numbrestate  = 15;Prec.params.CT.numbrestate  = 15;
 Prec.params.Ex.L0           = 0.10;  Prec.params.CT.L0           = 0.1;
 Prec.params.Ex.Li           = 0.1;   Prec.params.CT.Li           = 0.1;   %0.15
 Prec.params.Vstar           = 0.000;
@@ -70,7 +70,7 @@ for Li=0.15%0.06:0.01:0.1
             %% Run the JV scans here
             Vstart  = 0;
             Vend=Prec.results.Vocrad+0.01;
-            DP.Layers{2}.r0=0; %R0 for field dependence is 1 nm
+            DP.Layers{2}.r0_CT = 0; %R0 for field dependence is 1 nm
             
             DV2=device(DP);
             DV2.Prec=Prec;
