@@ -105,13 +105,14 @@ pause(0.1) % give the figure time to finish
 Vstart  = 0;
 Vend    = 1.5;
 tic
-DP.Layers{2}.r0 = 0; % R0 for field dependence is 1 nm
+DP.Layers{2}.r0_CT=0; %R0 for field dependence is 1 nm
+DP.Layers{2}.r0_Ex=0; 
 DV2 = device(DP);
 DV2.Prec = Prec;
 toc
 
 % for different suns
-suns = 1;
+suns = [1];
 for Gen = suns
     tic
     DV2 = device.runsolJsc(DV2,Gen);
